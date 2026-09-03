@@ -37,16 +37,17 @@ func TestSpecificationIsOpenAPI31(t *testing.T) {
 		parent      string
 		displayName string
 	}{
-		"Exchanges":    {displayName: "Exchanges"},
-		"Binance":      {parent: "Exchanges", displayName: "Binance"},
-		"BinanceSpot":  {parent: "Binance", displayName: "Spot"},
-		"BinanceUSDM":  {parent: "Binance", displayName: "USDⓈ-M Futures"},
-		"BinanceCoinM": {parent: "Binance", displayName: "COIN-M Futures"},
-		"Bitget":       {parent: "Exchanges", displayName: "Bitget"},
-		"BitgetSpot":   {parent: "Bitget", displayName: "Spot"},
-		"Weex":         {parent: "Exchanges", displayName: "Weex"},
-		"WeexSpot":     {parent: "Weex", displayName: "Spot"},
-		"WeexContract": {parent: "Weex", displayName: "Contract"},
+		"Exchanges":         {displayName: "Exchanges"},
+		"Binance":           {parent: "Exchanges", displayName: "Binance"},
+		"BinanceSpot":       {parent: "Binance", displayName: "Spot"},
+		"BinanceUSDM":       {parent: "Binance", displayName: "USDⓈ-M Futures"},
+		"BinanceCoinM":      {parent: "Binance", displayName: "COIN-M Futures"},
+		"Bitget":            {parent: "Exchanges", displayName: "Bitget"},
+		"BitgetSpot":        {parent: "Bitget", displayName: "Spot"},
+		"BitgetUSDTFutures": {parent: "Bitget", displayName: "USDT-M Futures"},
+		"Weex":              {parent: "Exchanges", displayName: "Weex"},
+		"WeexSpot":          {parent: "Weex", displayName: "Spot"},
+		"WeexContract":      {parent: "Weex", displayName: "Contract"},
 	} {
 		got, ok := tags[name]
 		if !ok {

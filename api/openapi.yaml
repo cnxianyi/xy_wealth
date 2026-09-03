@@ -43,6 +43,10 @@ tags:
     x-displayName: Spot
     parent: Bitget
     description: Bitget Spot 接口
+  - name: BitgetUSDTFutures
+    x-displayName: USDT-M Futures
+    parent: Bitget
+    description: Bitget USDT-FUTURES 接口
   - name: Weex
     x-displayName: Weex
     parent: Exchanges
@@ -386,7 +390,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/usdm/ping:
     get:
-      tags: [BinanceUSDM, WeexContract]
+      tags: [BinanceUSDM, BitgetUSDTFutures, WeexContract]
       operationId: getUsdmFuturesPing
       summary: USDⓈ-M Futures API 连通性检查
       parameters:
@@ -409,7 +413,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/usdm/time:
     get:
-      tags: [BinanceUSDM, WeexContract]
+      tags: [BinanceUSDM, BitgetUSDTFutures, WeexContract]
       operationId: getUsdmFuturesServerTime
       summary: 获取 USDⓈ-M Futures 服务器时间
       parameters:
@@ -432,7 +436,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/usdm/exchange-info:
     get:
-      tags: [BinanceUSDM, WeexContract]
+      tags: [BinanceUSDM, BitgetUSDTFutures, WeexContract]
       operationId: getUsdmFuturesExchangeInfo
       summary: 获取 USDⓈ-M Futures 交易规则
       parameters:
@@ -455,7 +459,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/usdm/depth:
     get:
-      tags: [BinanceUSDM, WeexContract]
+      tags: [BinanceUSDM, BitgetUSDTFutures, WeexContract]
       operationId: getUsdmFuturesDepth
       summary: 获取 USDⓈ-M Futures 订单簿
       parameters:
@@ -464,7 +468,7 @@ paths:
         - name: limit
           in: query
           required: false
-          description: 返回的买卖盘档位数；Weex Contract 仅支持 15 或 200
+          description: 返回的买卖盘档位数；Weex Contract 仅支持 15 或 200，Bitget USDT-FUTURES 支持 1、5、15、50、100 或 150
           schema:
             type: integer
             format: int32
@@ -491,7 +495,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/usdm/klines:
     get:
-      tags: [BinanceUSDM, WeexContract]
+      tags: [BinanceUSDM, BitgetUSDTFutures, WeexContract]
       operationId: getUsdmFuturesKlines
       summary: 获取 USDⓈ-M Futures K 线
       parameters:
@@ -500,7 +504,7 @@ paths:
         - name: interval
           in: query
           required: true
-          description: K 线间隔；Weex Contract 支持 1m、5m、15m、30m、1h、4h、12h、1d、1w
+          description: K 线间隔；Weex Contract 支持 1m、5m、15m、30m、1h、4h、12h、1d、1w；Bitget USDT-FUTURES 支持 1m、3m、5m、15m、30m、1h、4h、6h、12h、1d、3d、1w、1M
           schema:
             type: string
             enum: [1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w, 1M]
@@ -558,7 +562,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/usdm/ticker/24hr:
     get:
-      tags: [BinanceUSDM, WeexContract]
+      tags: [BinanceUSDM, BitgetUSDTFutures, WeexContract]
       operationId: getUsdmFuturesTicker24hr
       summary: 获取 USDⓈ-M Futures 24 小时行情
       parameters:
@@ -584,7 +588,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/usdm/ticker/price:
     get:
-      tags: [BinanceUSDM, WeexContract]
+      tags: [BinanceUSDM, BitgetUSDTFutures, WeexContract]
       operationId: getUsdmFuturesTickerPrice
       summary: 获取 USDⓈ-M Futures 最新价格
       parameters:
@@ -610,7 +614,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/usdm/ticker/book:
     get:
-      tags: [BinanceUSDM, WeexContract]
+      tags: [BinanceUSDM, BitgetUSDTFutures, WeexContract]
       operationId: getUsdmFuturesBookTicker
       summary: 获取 USDⓈ-M Futures 最优买卖价
       parameters:
@@ -636,7 +640,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/usdm/premium-index:
     get:
-      tags: [BinanceUSDM, WeexContract]
+      tags: [BinanceUSDM, BitgetUSDTFutures, WeexContract]
       operationId: getUsdmFuturesPremiumIndex
       summary: 获取 USDⓈ-M Futures 标记价格和资金费率
       parameters:
@@ -1177,7 +1181,7 @@ components:
       name: symbol
       in: query
       required: true
-      description: Binance USDⓈ-M Futures 或 Weex Contract 交易对
+      description: Binance USDⓈ-M Futures、Bitget USDT-FUTURES 或 Weex Contract 交易对
       schema:
         type: string
         examples: [BTCUSDT]
@@ -1643,7 +1647,7 @@ components:
       properties:
         provider:
           type: string
-          examples: [binance, weex]
+          examples: [binance, bitget, weex]
         status:
           type: string
           const: ok
@@ -1654,7 +1658,7 @@ components:
       properties:
         provider:
           type: string
-          examples: [binance, weex]
+          examples: [binance, bitget, weex]
         server_time:
           type: integer
           format: int64
@@ -1666,7 +1670,7 @@ components:
       properties:
         provider:
           type: string
-          examples: [binance, weex]
+          examples: [binance, bitget, weex]
         info:
           $ref: "#/components/schemas/USDSMFuturesExchangeInfo"
     USDSMFuturesExchangeInfo:
@@ -1682,7 +1686,7 @@ components:
           format: int64
         futures_type:
           type: string
-          examples: [U_MARGINED, WEEX_CONTRACT]
+          examples: [U_MARGINED, USDT-FUTURES, WEEX_CONTRACT]
         rate_limits:
           type: array
           items:
@@ -1743,6 +1747,8 @@ components:
         buy_limit_price_ratio:
           $ref: "#/components/schemas/DecimalString"
         sell_limit_price_ratio:
+          $ref: "#/components/schemas/DecimalString"
+        min_trade_usdt:
           $ref: "#/components/schemas/DecimalString"
         maker_fee_rate:
           $ref: "#/components/schemas/DecimalString"
@@ -2105,7 +2111,7 @@ components:
       properties:
         provider:
           type: string
-          examples: [binance, weex]
+          examples: [binance, bitget, weex]
         order_book:
           $ref: "#/components/schemas/FuturesOrderBook"
     FuturesOrderBook:
@@ -2153,7 +2159,7 @@ components:
       properties:
         provider:
           type: string
-          examples: [binance, weex]
+          examples: [binance, bitget, weex]
         klines:
           type: array
           items:
@@ -2165,7 +2171,7 @@ components:
       properties:
         provider:
           type: string
-          examples: [binance, weex]
+          examples: [binance, bitget, weex]
         ticker:
           $ref: "#/components/schemas/USDSMFuturesTicker24hr"
     USDSMFuturesTicker24hr:
@@ -2222,7 +2228,7 @@ components:
       properties:
         provider:
           type: string
-          examples: [binance, weex]
+          examples: [binance, bitget, weex]
         ticker:
           $ref: "#/components/schemas/PriceTicker"
     FuturesBookTicker:
@@ -2232,7 +2238,7 @@ components:
       properties:
         provider:
           type: string
-          examples: [binance, weex]
+          examples: [binance, bitget, weex]
         ticker:
           $ref: "#/components/schemas/BookTicker"
     FuturesPremiumIndex:
@@ -2242,7 +2248,7 @@ components:
       properties:
         provider:
           type: string
-          examples: [binance, weex]
+          examples: [binance, bitget, weex]
         premium_index:
           $ref: "#/components/schemas/USDSMFuturesPremiumIndex"
     USDSMFuturesPremiumIndex:

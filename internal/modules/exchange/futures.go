@@ -152,6 +152,7 @@ type USDSMFuturesSymbolInfo struct {
 	MaxLeverage           int              `json:"max_leverage,omitempty"`
 	BuyLimitPriceRatio    string           `json:"buy_limit_price_ratio,omitempty"`
 	SellLimitPriceRatio   string           `json:"sell_limit_price_ratio,omitempty"`
+	MinTradeUSDT          string           `json:"min_trade_usdt,omitempty"`
 	MakerFeeRate          string           `json:"maker_fee_rate,omitempty"`
 	TakerFeeRate          string           `json:"taker_fee_rate,omitempty"`
 	APIMakerFeeRate       string           `json:"api_maker_fee_rate,omitempty"`
