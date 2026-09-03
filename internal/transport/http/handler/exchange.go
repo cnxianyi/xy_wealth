@@ -396,7 +396,7 @@ func (h *Exchange) USDSMFuturesAccountBalances(c *gin.Context) {
 	}
 	balances, err := provider.USDSMFuturesAccountBalances(c.Request.Context())
 	if err != nil {
-		h.handleSpotError(c, name, "get Binance USDⓈ-M Futures account balances failed", err)
+		h.handleSpotError(c, name, "get USDⓈ-M Futures account balances failed", err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"provider": name, "balances": balances})
@@ -409,7 +409,7 @@ func (h *Exchange) USDSMFuturesAccountPositions(c *gin.Context) {
 	}
 	positions, err := provider.USDSMFuturesPositions(c.Request.Context(), c.Query("symbol"))
 	if err != nil {
-		h.handleSpotError(c, name, "get Binance USDⓈ-M Futures account positions failed", err)
+		h.handleSpotError(c, name, "get USDⓈ-M Futures account positions failed", err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"provider": name, "positions": positions})

@@ -666,14 +666,14 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/usdm/account/balances:
     get:
-      tags: [BinanceUSDM]
-      operationId: getBinanceUsdmFuturesAccountBalances
-      summary: 获取 Binance USDⓈ-M Futures 账户余额
+      tags: [BinanceUSDM, BitgetUSDTFutures]
+      operationId: getUsdmFuturesAccountBalances
+      summary: 获取 USDⓈ-M / USDT-FUTURES 账户余额
       parameters:
-        - $ref: "#/components/parameters/BinanceProvider"
+        - $ref: "#/components/parameters/Provider"
       responses:
         "200":
-          description: Binance USDⓈ-M Futures 账户余额
+          description: USDⓈ-M / USDT-FUTURES 账户余额
           headers:
             X-Request-ID:
               $ref: "#/components/headers/RequestID"
@@ -689,11 +689,11 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/usdm/account/positions:
     get:
-      tags: [BinanceUSDM]
-      operationId: getBinanceUsdmFuturesAccountPositions
-      summary: 获取 Binance USDⓈ-M Futures 账户持仓
+      tags: [BinanceUSDM, BitgetUSDTFutures]
+      operationId: getUsdmFuturesAccountPositions
+      summary: 获取 USDⓈ-M / USDT-FUTURES 账户持仓
       parameters:
-        - $ref: "#/components/parameters/BinanceProvider"
+        - $ref: "#/components/parameters/Provider"
         - name: symbol
           in: query
           required: false
@@ -703,7 +703,7 @@ paths:
             examples: [BTCUSDT]
       responses:
         "200":
-          description: Binance USDⓈ-M Futures 账户持仓
+          description: USDⓈ-M / USDT-FUTURES 账户持仓
           headers:
             X-Request-ID:
               $ref: "#/components/headers/RequestID"
@@ -2383,7 +2383,7 @@ components:
       properties:
         provider:
           type: string
-          examples: [binance]
+          examples: [binance, bitget]
         balances:
           type: array
           items:
@@ -2422,7 +2422,7 @@ components:
       properties:
         provider:
           type: string
-          examples: [binance]
+          examples: [binance, bitget]
         positions:
           type: array
           items:

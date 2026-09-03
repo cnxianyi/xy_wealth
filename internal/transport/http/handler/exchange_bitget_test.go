@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -38,6 +39,35 @@ func TestExchangeBitgetSpotRoutesUseIndependentProvider(t *testing.T) {
 	}
 }
 
+func TestExchangeBitgetUSDTAccountRoutesUseAccountCapability(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	handler := NewExchange([]exchange.Provider{stubBitgetAccountProvider{}}, zap.NewNop())
+	router := gin.New()
+	router.GET("/exchanges/:provider/futures/usdm/account/balances", handler.USDSMFuturesAccountBalances)
+	router.GET("/exchanges/:provider/futures/usdm/account/positions", handler.USDSMFuturesAccountPositions)
+
+	for _, path := range []string{
+		"/exchanges/bitget/futures/usdm/account/balances",
+		"/exchanges/bitget/futures/usdm/account/positions?symbol=BTCUSDT",
+	} {
+		response := httptest.NewRecorder()
+		router.ServeHTTP(response, httptest.NewRequest(http.MethodGet, path, nil))
+		if response.Code != http.StatusOK || !strings.Contains(response.Body.String(), `"provider":"bitget"`) {
+			t.Fatalf("path %s response = %d: %s", path, response.Code, response.Body.String())
+		}
+	}
+}
+
 type stubBitgetSpotProvider struct{ stubSpotProvider }
 
 func (stubBitgetSpotProvider) Name() string { return "bitget" }
+
+type stubBitgetAccountProvider struct{ stubBitgetSpotProvider }
+
+func (stubBitgetAccountProvider) USDSMFuturesAccountBalances(context.Context) ([]exchange.FuturesAccountBalance, error) {
+	return []exchange.FuturesAccountBalance{{Asset: "USDT", Balance: "100"}}, nil
+}
+
+func (stubBitgetAccountProvider) USDSMFuturesPositions(context.Context, string) ([]exchange.FuturesPosition, error) {
+	return []exchange.FuturesPosition{{Symbol: "BTCUSDT", PositionSide: "LONG"}}, nil
+}

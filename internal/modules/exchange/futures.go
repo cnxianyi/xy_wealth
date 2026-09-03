@@ -40,7 +40,8 @@ type ContractBalanceProvider interface {
 	ContractBalances(ctx context.Context) ([]asset.Balance, error)
 }
 
-// USDSMFuturesAccountProvider exposes Binance USDⓈ-M Futures account data.
+// USDSMFuturesAccountProvider exposes signed USDⓈ-M/USDT-FUTURES account data
+// for providers that implement this capability.
 // It is separate from the public market provider so account credentials and
 // signed endpoints are not implied by a market-data implementation.
 type USDSMFuturesAccountProvider interface {
@@ -251,9 +252,9 @@ type ContractPosition struct {
 	LiquidatePrice             string `json:"liquidate_price"`
 }
 
-// FuturesAccountBalance is the normalized account asset returned by Binance
-// Futures balance endpoints. Decimal values remain strings to preserve exact
-// exchange precision.
+// FuturesAccountBalance is the normalized account asset returned by futures
+// balance endpoints. Decimal values remain strings to preserve exact exchange
+// precision.
 type FuturesAccountBalance struct {
 	AccountAlias          string `json:"account_alias,omitempty"`
 	Asset                 string `json:"asset"`
