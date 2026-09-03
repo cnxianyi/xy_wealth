@@ -2,8 +2,8 @@
 //
 // Bitget uses a response envelope for both public and private endpoints. The
 // client unwraps that envelope here so handlers only deal with normalized
-// exchange models. Futures capabilities will be added separately and are not
-// registered by this provider yet.
+// exchange models. Futures capabilities are implemented in the dedicated
+// contract and coinm files.
 package bitget
 
 import (
@@ -51,8 +51,9 @@ var (
 	}
 )
 
-// Client is a Bitget classic V2 Spot client. Bitget currently uses one REST
-// domain for Spot; contract support will use its own capability and paths.
+// Client is a Bitget Classic V2 client. Spot and Mix (futures) endpoints share
+// the configured REST domain while each capability keeps its own paths and
+// normalization logic.
 type Client struct {
 	baseURL     string
 	apiKey      string

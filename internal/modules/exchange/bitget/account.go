@@ -45,7 +45,11 @@ var _ exchange.USDSMFuturesAccountProvider = (*Client)(nil)
 // balance. Bitget returns one account record per margin coin; the normalized
 // model exposes the account equity and transfer limits as decimal strings.
 func (c *Client) USDSMFuturesAccountBalances(ctx context.Context) ([]exchange.FuturesAccountBalance, error) {
-	query := url.Values{"productType": []string{bitgetUSDTFuturesProductType}}
+	return c.futuresAccountBalances(ctx, bitgetUSDTFuturesProductType)
+}
+
+func (c *Client) futuresAccountBalances(ctx context.Context, productType string) ([]exchange.FuturesAccountBalance, error) {
+	query := url.Values{"productType": []string{productType}}
 	var response []futuresAccountResponse
 	if err := c.getSignedJSON(ctx, "/mix/account/accounts", query, &response); err != nil {
 		return nil, err
@@ -74,9 +78,13 @@ func (c *Client) USDSMFuturesAccountBalances(ctx context.Context) ([]exchange.Fu
 // USDSMFuturesPositions returns Bitget's signed current positions. An empty
 // symbol uses all-position; a symbol uses the stricter single-position API.
 func (c *Client) USDSMFuturesPositions(ctx context.Context, symbol string) ([]exchange.FuturesPosition, error) {
+	return c.futuresPositions(ctx, symbol, bitgetUSDTFuturesProductType, "USDT")
+}
+
+func (c *Client) futuresPositions(ctx context.Context, symbol, productType, marginCoin string) ([]exchange.FuturesPosition, error) {
 	normalized := strings.TrimSpace(symbol)
 	path := "/mix/position/all-position"
-	query := url.Values{"productType": []string{bitgetUSDTFuturesProductType}}
+	query := url.Values{"productType": []string{productType}}
 	if normalized != "" {
 		value, err := normalizeSymbol(normalized)
 		if err != nil {
@@ -84,7 +92,9 @@ func (c *Client) USDSMFuturesPositions(ctx context.Context, symbol string) ([]ex
 		}
 		path = "/mix/position/single-position"
 		query.Set("symbol", value)
-		query.Set("marginCoin", "USDT")
+		if marginCoin != "" {
+			query.Set("marginCoin", marginCoin)
+		}
 	}
 	var response []futuresPositionResponse
 	if err := c.getSignedJSON(ctx, path, query, &response); err != nil {

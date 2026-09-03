@@ -96,11 +96,23 @@ func (c *Client) FuturesServerTime(ctx context.Context) (exchange.ServerTime, er
 
 // FuturesExchangeInfo returns Bitget USDT-FUTURES contract configuration.
 func (c *Client) FuturesExchangeInfo(ctx context.Context) (exchange.USDSMFuturesExchangeInfo, error) {
-	query := url.Values{"productType": []string{bitgetUSDTFuturesProductType}}
-	var response []contractSymbolResponse
-	if err := c.getJSON(ctx, "/mix/market/contracts", query, &response); err != nil {
+	response, err := c.contracts(ctx, bitgetUSDTFuturesProductType)
+	if err != nil {
 		return exchange.USDSMFuturesExchangeInfo{}, err
 	}
+	return normalizeUSDTFuturesExchangeInfo(response)
+}
+
+func (c *Client) contracts(ctx context.Context, productType string) ([]contractSymbolResponse, error) {
+	query := url.Values{"productType": []string{productType}}
+	var response []contractSymbolResponse
+	if err := c.getJSON(ctx, "/mix/market/contracts", query, &response); err != nil {
+		return nil, err
+	}
+	return response, nil
+}
+
+func normalizeUSDTFuturesExchangeInfo(response []contractSymbolResponse) (exchange.USDSMFuturesExchangeInfo, error) {
 	info := exchange.USDSMFuturesExchangeInfo{
 		Timezone:    "UTC",
 		FuturesType: bitgetUSDTFuturesProductType,
@@ -154,6 +166,10 @@ func (c *Client) FuturesExchangeInfo(ctx context.Context) (exchange.USDSMFutures
 // price and quantity as JSON numbers for this endpoint, so levels are decoded
 // explicitly into decimal strings before crossing the module boundary.
 func (c *Client) FuturesDepth(ctx context.Context, symbol string, limit int) (exchange.FuturesOrderBook, error) {
+	return c.futuresDepth(ctx, symbol, limit, bitgetUSDTFuturesProductType)
+}
+
+func (c *Client) futuresDepth(ctx context.Context, symbol string, limit int, productType string) (exchange.FuturesOrderBook, error) {
 	normalized, err := normalizeSymbol(symbol)
 	if err != nil {
 		return exchange.FuturesOrderBook{}, err
@@ -165,7 +181,7 @@ func (c *Client) FuturesDepth(ctx context.Context, symbol string, limit int) (ex
 		return exchange.FuturesOrderBook{}, err
 	}
 	query := url.Values{
-		"productType": []string{bitgetUSDTFuturesProductType},
+		"productType": []string{productType},
 		"symbol":      []string{normalized},
 		"limit":       []string{strconv.Itoa(limit)},
 	}
@@ -196,13 +212,17 @@ func (c *Client) FuturesDepth(ctx context.Context, symbol string, limit int) (ex
 }
 
 func (c *Client) FuturesKlines(ctx context.Context, request exchange.KlinesRequest) ([]exchange.Kline, error) {
+	return c.futuresKlines(ctx, request, bitgetUSDTFuturesProductType)
+}
+
+func (c *Client) futuresKlines(ctx context.Context, request exchange.KlinesRequest, productType string) ([]exchange.Kline, error) {
 	normalized, err := normalizeSymbol(request.Symbol)
 	if err != nil {
 		return nil, err
 	}
 	granularity, ok := validContractIntervals[strings.TrimSpace(request.Interval)]
 	if !ok {
-		return nil, exchange.InvalidParameterError{Parameter: "interval", Message: "must be a supported Bitget USDT-FUTURES interval"}
+		return nil, exchange.InvalidParameterError{Parameter: "interval", Message: "must be a supported Bitget futures interval"}
 	}
 	limit := request.Limit
 	if limit == 0 {
@@ -221,7 +241,7 @@ func (c *Client) FuturesKlines(ctx context.Context, request exchange.KlinesReque
 		return nil, exchange.InvalidParameterError{Parameter: "startTime", Message: "must not be after endTime"}
 	}
 	query := url.Values{
-		"productType": []string{bitgetUSDTFuturesProductType},
+		"productType": []string{productType},
 		"symbol":      []string{normalized},
 		"granularity": []string{granularity},
 		"limit":       []string{strconv.Itoa(limit)},
@@ -251,7 +271,7 @@ func (c *Client) FuturesKlines(ctx context.Context, request exchange.KlinesReque
 }
 
 func (c *Client) FuturesTicker24hr(ctx context.Context, symbol string) (exchange.FuturesTicker24hr, error) {
-	item, err := c.contractTicker(ctx, symbol)
+	item, err := c.contractTicker(ctx, symbol, bitgetUSDTFuturesProductType)
 	if err != nil {
 		return exchange.FuturesTicker24hr{}, err
 	}
@@ -302,12 +322,16 @@ func (c *Client) FuturesTicker24hr(ctx context.Context, symbol string) (exchange
 }
 
 func (c *Client) FuturesTickerPrice(ctx context.Context, symbol string) (exchange.PriceTicker, error) {
+	return c.futuresTickerPrice(ctx, symbol, bitgetUSDTFuturesProductType)
+}
+
+func (c *Client) futuresTickerPrice(ctx context.Context, symbol, productType string) (exchange.PriceTicker, error) {
 	normalized, err := normalizeSymbol(symbol)
 	if err != nil {
 		return exchange.PriceTicker{}, err
 	}
 	query := url.Values{
-		"productType": []string{bitgetUSDTFuturesProductType},
+		"productType": []string{productType},
 		"symbol":      []string{normalized},
 	}
 	var response []contractPriceResponse
@@ -325,7 +349,7 @@ func (c *Client) FuturesTickerPrice(ctx context.Context, symbol string) (exchang
 }
 
 func (c *Client) FuturesBookTicker(ctx context.Context, symbol string) (exchange.BookTicker, error) {
-	item, err := c.contractTicker(ctx, symbol)
+	item, err := c.contractTicker(ctx, symbol, bitgetUSDTFuturesProductType)
 	if err != nil {
 		return exchange.BookTicker{}, err
 	}
@@ -342,7 +366,7 @@ func (c *Client) FuturesBookTicker(ctx context.Context, symbol string) (exchange
 // FuturesPremiumIndex normalizes mark/index/funding data from the contract
 // ticker. Bitget exposes all of these values together on its ticker endpoint.
 func (c *Client) FuturesPremiumIndex(ctx context.Context, symbol string) (exchange.FuturesPremiumIndex, error) {
-	item, err := c.contractTicker(ctx, symbol)
+	item, err := c.contractTicker(ctx, symbol, bitgetUSDTFuturesProductType)
 	if err != nil {
 		return exchange.FuturesPremiumIndex{}, err
 	}
@@ -359,13 +383,13 @@ func (c *Client) FuturesPremiumIndex(ctx context.Context, symbol string) (exchan
 	}, nil
 }
 
-func (c *Client) contractTicker(ctx context.Context, symbol string) (contractTickerResponse, error) {
+func (c *Client) contractTicker(ctx context.Context, symbol, productType string) (contractTickerResponse, error) {
 	normalized, err := normalizeSymbol(symbol)
 	if err != nil {
 		return contractTickerResponse{}, err
 	}
 	query := url.Values{
-		"productType": []string{bitgetUSDTFuturesProductType},
+		"productType": []string{productType},
 		"symbol":      []string{normalized},
 	}
 	var response []contractTickerResponse

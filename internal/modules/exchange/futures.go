@@ -50,7 +50,7 @@ type USDSMFuturesAccountProvider interface {
 	USDSMFuturesPositions(ctx context.Context, symbol string) ([]FuturesPosition, error)
 }
 
-// COINMFuturesAccountProvider exposes Binance COIN-M Futures account data.
+// COINMFuturesAccountProvider exposes COIN-M/COIN-FUTURES account data.
 type COINMFuturesAccountProvider interface {
 	Provider
 	COINMFuturesAccountBalances(ctx context.Context) ([]FuturesAccountBalance, error)

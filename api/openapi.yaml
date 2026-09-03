@@ -47,6 +47,10 @@ tags:
     x-displayName: USDT-M Futures
     parent: Bitget
     description: Bitget USDT-FUTURES 接口
+  - name: BitgetCoinFutures
+    x-displayName: COIN-FUTURES
+    parent: Bitget
+    description: Bitget COIN-FUTURES 接口
   - name: Weex
     x-displayName: Weex
     parent: Exchanges
@@ -776,14 +780,14 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/coinm/ping:
     get:
-      tags: [BinanceCoinM]
+      tags: [BinanceCoinM, BitgetCoinFutures]
       operationId: getCoinMFuturesPing
       summary: COIN-M Futures API 连通性检查
       parameters:
         - $ref: "#/components/parameters/Provider"
       responses:
         "200":
-          description: Binance COIN-M Futures API 可访问
+          description: Binance COIN-M 或 Bitget COIN-FUTURES API 可访问
           headers:
             X-Request-ID:
               $ref: "#/components/headers/RequestID"
@@ -799,14 +803,14 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/coinm/time:
     get:
-      tags: [BinanceCoinM]
+      tags: [BinanceCoinM, BitgetCoinFutures]
       operationId: getCoinMFuturesServerTime
       summary: 获取 COIN-M Futures 服务器时间
       parameters:
         - $ref: "#/components/parameters/Provider"
       responses:
         "200":
-          description: Binance COIN-M Futures 服务器时间（毫秒）
+          description: Binance COIN-M 或 Bitget COIN-FUTURES 服务器时间（毫秒）
           headers:
             X-Request-ID:
               $ref: "#/components/headers/RequestID"
@@ -822,7 +826,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/coinm/exchange-info:
     get:
-      tags: [BinanceCoinM]
+      tags: [BinanceCoinM, BitgetCoinFutures]
       operationId: getCoinMFuturesExchangeInfo
       summary: 获取 COIN-M Futures 交易规则
       parameters:
@@ -845,7 +849,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/coinm/depth:
     get:
-      tags: [BinanceCoinM]
+      tags: [BinanceCoinM, BitgetCoinFutures]
       operationId: getCoinMFuturesDepth
       summary: 获取 COIN-M Futures 订单簿
       parameters:
@@ -854,11 +858,11 @@ paths:
         - name: limit
           in: query
           required: false
-          description: 返回的买卖盘档位数
+          description: 返回的买卖盘档位数；Binance 支持 5、10、20、50、100、500、1000，Bitget COIN-FUTURES 支持 1、5、15、50、100 或 150
           schema:
             type: integer
             format: int32
-            enum: [5, 10, 20, 50, 100, 500, 1000]
+            enum: [1, 5, 10, 15, 20, 50, 100, 150, 500, 1000]
             default: 500
       responses:
         "200":
@@ -880,7 +884,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/coinm/klines:
     get:
-      tags: [BinanceCoinM]
+      tags: [BinanceCoinM, BitgetCoinFutures]
       operationId: getCoinMFuturesKlines
       summary: 获取 COIN-M Futures K 线
       parameters:
@@ -940,7 +944,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/coinm/ticker/24hr:
     get:
-      tags: [BinanceCoinM]
+      tags: [BinanceCoinM, BitgetCoinFutures]
       operationId: getCoinMFuturesTicker24hr
       summary: 获取 COIN-M Futures 24 小时行情
       parameters:
@@ -966,7 +970,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/coinm/ticker/price:
     get:
-      tags: [BinanceCoinM]
+      tags: [BinanceCoinM, BitgetCoinFutures]
       operationId: getCoinMFuturesTickerPrice
       summary: 获取 COIN-M Futures 最新价格
       parameters:
@@ -992,7 +996,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/coinm/ticker/book:
     get:
-      tags: [BinanceCoinM]
+      tags: [BinanceCoinM, BitgetCoinFutures]
       operationId: getCoinMFuturesBookTicker
       summary: 获取 COIN-M Futures 最优买卖价
       parameters:
@@ -1018,7 +1022,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/coinm/premium-index:
     get:
-      tags: [BinanceCoinM]
+      tags: [BinanceCoinM, BitgetCoinFutures]
       operationId: getCoinMFuturesPremiumIndex
       summary: 获取 COIN-M Futures 标记价格和资金费率
       parameters:
@@ -1044,14 +1048,14 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/coinm/account/balances:
     get:
-      tags: [BinanceCoinM]
-      operationId: getBinanceCoinMFuturesAccountBalances
-      summary: 获取 Binance COIN-M Futures 账户余额
+      tags: [BinanceCoinM, BitgetCoinFutures]
+      operationId: getCoinMFuturesAccountBalances
+      summary: 获取 COIN-M / COIN-FUTURES 账户余额
       parameters:
-        - $ref: "#/components/parameters/BinanceProvider"
+        - $ref: "#/components/parameters/Provider"
       responses:
         "200":
-          description: Binance COIN-M Futures 账户余额
+          description: COIN-M / COIN-FUTURES 账户余额
           headers:
             X-Request-ID:
               $ref: "#/components/headers/RequestID"
@@ -1067,21 +1071,21 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/coinm/account/positions:
     get:
-      tags: [BinanceCoinM]
-      operationId: getBinanceCoinMFuturesAccountPositions
-      summary: 获取 Binance COIN-M Futures 账户持仓
+      tags: [BinanceCoinM, BitgetCoinFutures]
+      operationId: getCoinMFuturesAccountPositions
+      summary: 获取 COIN-M / COIN-FUTURES 账户持仓
       parameters:
-        - $ref: "#/components/parameters/BinanceProvider"
+        - $ref: "#/components/parameters/Provider"
         - name: symbol
           in: query
           required: false
-          description: 合约符号；不传则返回所有交易对持仓。Binance COIN-M 会将合约符号转换为上游要求的 pair 参数
+          description: 合约符号；不传则返回所有交易对持仓。Binance COIN-M 和 Bitget COIN-FUTURES 会按各自上游要求转换
           schema:
             type: string
             examples: [BTCUSD_PERP]
       responses:
         "200":
-          description: Binance COIN-M Futures 账户持仓
+          description: COIN-M / COIN-FUTURES 账户持仓
           headers:
             X-Request-ID:
               $ref: "#/components/headers/RequestID"
@@ -1189,10 +1193,10 @@ components:
       name: symbol
       in: query
       required: true
-      description: Binance COIN-M Futures 合约交易对
+      description: Binance COIN-M Futures 或 Bitget COIN-FUTURES 合约交易对
       schema:
         type: string
-        examples: [BTCUSD_PERP]
+        examples: [BTCUSD_PERP, BTCUSD]
   headers:
     RequestID:
       description: 请求追踪标识
@@ -1833,7 +1837,7 @@ components:
       properties:
         provider:
           type: string
-          examples: [binance]
+          examples: [binance, bitget]
         info:
           $ref: "#/components/schemas/COINMFuturesExchangeInfo"
     COINMFuturesExchangeInfo:
@@ -1863,7 +1867,7 @@ components:
     COINMFuturesSymbolInfo:
       type: object
       additionalProperties: false
-      required: [symbol, pair, contract_type, delivery_date, onboard_date, contract_status, base_asset, quote_asset, margin_asset, contract_size]
+      required: [symbol, pair, contract_type, delivery_date, onboard_date, contract_status, base_asset, quote_asset, margin_asset]
       properties:
         symbol:
           type: string
@@ -1944,7 +1948,7 @@ components:
       properties:
         provider:
           type: string
-          examples: [binance]
+          examples: [binance, bitget]
         order_book:
           $ref: "#/components/schemas/FuturesOrderBook"
     COINMFuturesKlinesResponse:
@@ -1954,7 +1958,7 @@ components:
       properties:
         provider:
           type: string
-          examples: [binance]
+          examples: [binance, bitget]
         klines:
           type: array
           items:
@@ -1966,7 +1970,7 @@ components:
       properties:
         provider:
           type: string
-          examples: [binance]
+          examples: [binance, bitget]
         ticker:
           $ref: "#/components/schemas/COINMFuturesTicker24hr"
     COINMFuturesTicker24hr:
@@ -2019,7 +2023,7 @@ components:
       properties:
         provider:
           type: string
-          examples: [binance]
+          examples: [binance, bitget]
         ticker:
           $ref: "#/components/schemas/COINMFuturesPriceTicker"
     COINMFuturesPriceTicker:
@@ -2043,7 +2047,7 @@ components:
       properties:
         provider:
           type: string
-          examples: [binance]
+          examples: [binance, bitget]
         ticker:
           $ref: "#/components/schemas/COINMFuturesBookTicker"
     COINMFuturesBookTicker:
@@ -2076,7 +2080,7 @@ components:
       properties:
         provider:
           type: string
-          examples: [binance]
+          examples: [binance, bitget]
         premium_index:
           $ref: "#/components/schemas/COINMFuturesPremiumIndex"
     COINMFuturesPremiumIndex:
