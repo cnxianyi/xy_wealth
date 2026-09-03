@@ -113,9 +113,13 @@ func (c *Client) contracts(ctx context.Context, productType string) ([]contractS
 }
 
 func normalizeUSDTFuturesExchangeInfo(response []contractSymbolResponse) (exchange.USDSMFuturesExchangeInfo, error) {
+	return normalizeFuturesExchangeInfo(response, bitgetUSDTFuturesProductType)
+}
+
+func normalizeFuturesExchangeInfo(response []contractSymbolResponse, productType string) (exchange.USDSMFuturesExchangeInfo, error) {
 	info := exchange.USDSMFuturesExchangeInfo{
 		Timezone:    "UTC",
-		FuturesType: bitgetUSDTFuturesProductType,
+		FuturesType: productType,
 		Symbols:     make([]exchange.USDSMFuturesSymbolInfo, 0, len(response)),
 	}
 	for _, item := range response {
@@ -271,7 +275,11 @@ func (c *Client) futuresKlines(ctx context.Context, request exchange.KlinesReque
 }
 
 func (c *Client) FuturesTicker24hr(ctx context.Context, symbol string) (exchange.FuturesTicker24hr, error) {
-	item, err := c.contractTicker(ctx, symbol, bitgetUSDTFuturesProductType)
+	return c.futuresTicker24hr(ctx, symbol, bitgetUSDTFuturesProductType)
+}
+
+func (c *Client) futuresTicker24hr(ctx context.Context, symbol, productType string) (exchange.FuturesTicker24hr, error) {
+	item, err := c.contractTicker(ctx, symbol, productType)
 	if err != nil {
 		return exchange.FuturesTicker24hr{}, err
 	}
@@ -349,7 +357,11 @@ func (c *Client) futuresTickerPrice(ctx context.Context, symbol, productType str
 }
 
 func (c *Client) FuturesBookTicker(ctx context.Context, symbol string) (exchange.BookTicker, error) {
-	item, err := c.contractTicker(ctx, symbol, bitgetUSDTFuturesProductType)
+	return c.futuresBookTicker(ctx, symbol, bitgetUSDTFuturesProductType)
+}
+
+func (c *Client) futuresBookTicker(ctx context.Context, symbol, productType string) (exchange.BookTicker, error) {
+	item, err := c.contractTicker(ctx, symbol, productType)
 	if err != nil {
 		return exchange.BookTicker{}, err
 	}
@@ -366,7 +378,11 @@ func (c *Client) FuturesBookTicker(ctx context.Context, symbol string) (exchange
 // FuturesPremiumIndex normalizes mark/index/funding data from the contract
 // ticker. Bitget exposes all of these values together on its ticker endpoint.
 func (c *Client) FuturesPremiumIndex(ctx context.Context, symbol string) (exchange.FuturesPremiumIndex, error) {
-	item, err := c.contractTicker(ctx, symbol, bitgetUSDTFuturesProductType)
+	return c.futuresPremiumIndex(ctx, symbol, bitgetUSDTFuturesProductType)
+}
+
+func (c *Client) futuresPremiumIndex(ctx context.Context, symbol, productType string) (exchange.FuturesPremiumIndex, error) {
+	item, err := c.contractTicker(ctx, symbol, productType)
 	if err != nil {
 		return exchange.FuturesPremiumIndex{}, err
 	}

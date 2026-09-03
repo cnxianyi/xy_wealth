@@ -1,6 +1,6 @@
 # xy-wealth
 
-面向多数据源的资产聚合服务。当前接入 Binance Spot、USDⓈ-M Futures、COIN-M Futures、Bitget Spot、Bitget USDT-FUTURES、Bitget COIN-FUTURES、Weex Spot 和 Weex Contract 基础只读接口，HTTP API 由 Gin 统一暴露；PostgreSQL 使用原生 `database/sql`，Redis 用于后续缓存、锁和任务状态，不引入 ORM。
+面向多数据源的资产聚合服务。当前接入 Binance Spot、USDⓈ-M Futures、COIN-M Futures、Bitget Spot、Bitget USDT-FUTURES、Bitget COIN-FUTURES、Bitget USDC-FUTURES、Weex Spot 和 Weex Contract 基础只读接口，HTTP API 由 Gin 统一暴露；PostgreSQL 使用原生 `database/sql`，Redis 用于后续缓存、锁和任务状态，不引入 ORM。
 
 Go module 对应正式仓库：`github.com/cnxianyi/xy_wealth`。
 
@@ -45,7 +45,7 @@ Binance USDⓈ-M Futures 使用 `binance.futures_base_url`（默认 `https://fap
 
 Binance COIN-M Futures 使用 `binance.coin_m_futures_base_url`（默认 `https://dapi.binance.com`），与 USDⓈ-M Futures 相互独立。
 
-Bitget Classic V2 Spot 使用 `bitget.base_url`（默认 `https://api.bitget.com`）。公共行情接口无需密钥；账户余额查询需要配置 API Key、Secret Key 和 Passphrase。
+Bitget Classic V2 Spot 和 Mix 使用 `bitget.base_url`（默认 `https://api.bitget.com`）。公共行情接口无需密钥；账户余额和持仓查询需要配置 API Key、Secret Key 和 Passphrase。USDC-FUTURES 合约符号按 Bitget 格式使用，例如 `BTCPERP`。
 
 Weex V3 使用独立的 Spot 与 Contract REST 域名：`weex.spot_base_url`（默认 `https://api-spot.weex.com`）和 `weex.contract_base_url`（默认 `https://api-contract.weex.com`）。当前已接入 Spot 与 Contract 基础只读接口、Spot 账户余额查询，以及需要签名的 Contract 账户余额和持仓查询。
 
@@ -130,6 +130,17 @@ Weex 公共 Spot/Contract 接口不需要密钥；账户余额查询需要配置
 | GET | `/api/v1/exchanges/bitget/futures/usdm/premium-index?symbol=BTCUSDT` | Bitget USDT-FUTURES 标记价格和资金费率 |
 | GET | `/api/v1/exchanges/bitget/futures/usdm/account/balances` | Bitget USDT-FUTURES 账户余额 |
 | GET | `/api/v1/exchanges/bitget/futures/usdm/account/positions?symbol=BTCUSDT` | Bitget USDT-FUTURES 账户持仓 |
+| GET | `/api/v1/exchanges/bitget/futures/usdcm/ping` | Bitget USDC-FUTURES 连通性检查 |
+| GET | `/api/v1/exchanges/bitget/futures/usdcm/time` | Bitget USDC-FUTURES 服务器时间 |
+| GET | `/api/v1/exchanges/bitget/futures/usdcm/exchange-info` | Bitget USDC-FUTURES 合约规则 |
+| GET | `/api/v1/exchanges/bitget/futures/usdcm/depth?symbol=BTCPERP` | Bitget USDC-FUTURES 订单簿 |
+| GET | `/api/v1/exchanges/bitget/futures/usdcm/klines?symbol=BTCPERP&interval=1m` | Bitget USDC-FUTURES K 线 |
+| GET | `/api/v1/exchanges/bitget/futures/usdcm/ticker/24hr?symbol=BTCPERP` | Bitget USDC-FUTURES 24 小时行情 |
+| GET | `/api/v1/exchanges/bitget/futures/usdcm/ticker/price?symbol=BTCPERP` | Bitget USDC-FUTURES 最新价格 |
+| GET | `/api/v1/exchanges/bitget/futures/usdcm/ticker/book?symbol=BTCPERP` | Bitget USDC-FUTURES 最优买卖价 |
+| GET | `/api/v1/exchanges/bitget/futures/usdcm/premium-index?symbol=BTCPERP` | Bitget USDC-FUTURES 标记价格和资金费率 |
+| GET | `/api/v1/exchanges/bitget/futures/usdcm/account/balances` | Bitget USDC-FUTURES 账户余额 |
+| GET | `/api/v1/exchanges/bitget/futures/usdcm/account/positions?symbol=BTCPERP` | Bitget USDC-FUTURES 账户持仓 |
 | GET | `/api/v1/exchanges/bitget/futures/coinm/ping` | Bitget COIN-FUTURES 连通性检查 |
 | GET | `/api/v1/exchanges/bitget/futures/coinm/time` | Bitget COIN-FUTURES 服务器时间 |
 | GET | `/api/v1/exchanges/bitget/futures/coinm/exchange-info` | Bitget COIN-FUTURES 合约规则 |
@@ -153,11 +164,11 @@ Weex 公共 Spot/Contract 接口不需要密钥；账户余额查询需要配置
 
 当前 COIN-M Futures 开放只读基础行情、账户余额和账户持仓查询；合约下单、保证金调整和用户数据流属于后续阶段。
 
-当前 Bitget Spot 开放连通性、服务器时间、交易规则、订单簿、K 线、行情和账户余额查询；Bitget USDT-FUTURES 和 COIN-FUTURES 开放只读合约行情、账户余额和账户持仓查询；USDC-FUTURES、交易写操作和其他合约产品属于后续阶段。
+当前 Bitget Spot 开放连通性、服务器时间、交易规则、订单簿、K 线、行情和账户余额查询；Bitget USDT-FUTURES、COIN-FUTURES 和 USDC-FUTURES 开放只读合约行情、账户余额和账户持仓查询；交易写操作和其他合约产品属于后续阶段。
 
 当前 Weex Spot 开放连通性、服务器时间、交易规则、订单簿、K 线、行情和账户余额查询；Weex Contract 开放对应的只读合约行情，以及签名账户余额和持仓查询接口。Spot/Contract 交易写操作属于后续阶段，分别使用 `/api/v1/exchanges/{provider}/spot/...` 和 `/api/v1/exchanges/{provider}/futures/usdm/...` 路由。
 
-`/docs` 使用固定版本的 Scalar API Reference 渲染 `/openapi.yaml`，浏览器需要能够访问 jsDelivr CDN。文档侧边栏按嵌套标签组织为 `Exchanges → Binance → Spot / USDⓈ-M Futures / COIN-M Futures`、`Exchanges → Bitget → Spot / USDT-M Futures / COIN-FUTURES` 与 `Exchanges → Weex → Spot / Contract`。OpenAPI 规范和文档页面作为 Go embed 资源编入服务二进制，部署时无需额外挂载文件。
+`/docs` 使用固定版本的 Scalar API Reference 渲染 `/openapi.yaml`，浏览器需要能够访问 jsDelivr CDN。文档侧边栏按嵌套标签组织为 `Exchanges → Binance → Spot / USDⓈ-M Futures / COIN-M Futures`、`Exchanges → Bitget → Spot / USDT-M Futures / COIN-FUTURES / USDC-M Futures` 与 `Exchanges → Weex → Spot / Contract`。OpenAPI 规范和文档页面作为 Go embed 资源编入服务二进制，部署时无需额外挂载文件。
 
 ## 常用命令
 

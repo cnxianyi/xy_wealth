@@ -23,6 +23,21 @@ type USDSMFuturesProvider interface {
 	FuturesPremiumIndex(ctx context.Context, symbol string) (FuturesPremiumIndex, error)
 }
 
+// USDCMFuturesProvider is the public, read-only USDC-M Futures / compatible
+// Contract REST surface.
+type USDCMFuturesProvider interface {
+	Provider
+	USDCMFuturesPing(ctx context.Context) error
+	USDCMFuturesServerTime(ctx context.Context) (ServerTime, error)
+	USDCMFuturesExchangeInfo(ctx context.Context) (USDSMFuturesExchangeInfo, error)
+	USDCMFuturesDepth(ctx context.Context, symbol string, limit int) (FuturesOrderBook, error)
+	USDCMFuturesKlines(ctx context.Context, request KlinesRequest) ([]Kline, error)
+	USDCMFuturesTicker24hr(ctx context.Context, symbol string) (FuturesTicker24hr, error)
+	USDCMFuturesTickerPrice(ctx context.Context, symbol string) (PriceTicker, error)
+	USDCMFuturesBookTicker(ctx context.Context, symbol string) (BookTicker, error)
+	USDCMFuturesPremiumIndex(ctx context.Context, symbol string) (FuturesPremiumIndex, error)
+}
+
 // ContractPositionProvider exposes read-only Contract position data for
 // providers that implement a signed position endpoint. It is separate from
 // USDSMFuturesProvider so providers without a position API are not registered
@@ -48,6 +63,14 @@ type USDSMFuturesAccountProvider interface {
 	Provider
 	USDSMFuturesAccountBalances(ctx context.Context) ([]FuturesAccountBalance, error)
 	USDSMFuturesPositions(ctx context.Context, symbol string) ([]FuturesPosition, error)
+}
+
+// USDCMFuturesAccountProvider exposes signed USDC-M/USDC-FUTURES account data
+// for providers that implement this capability.
+type USDCMFuturesAccountProvider interface {
+	Provider
+	USDCMFuturesAccountBalances(ctx context.Context) ([]FuturesAccountBalance, error)
+	USDCMFuturesPositions(ctx context.Context, symbol string) ([]FuturesPosition, error)
 }
 
 // COINMFuturesAccountProvider exposes COIN-M/COIN-FUTURES account data.

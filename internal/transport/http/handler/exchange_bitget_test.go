@@ -58,6 +58,25 @@ func TestExchangeBitgetUSDTAccountRoutesUseAccountCapability(t *testing.T) {
 	}
 }
 
+func TestExchangeBitgetUSDCAccountRoutesUseAccountCapability(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	handler := NewExchange([]exchange.Provider{stubBitgetAccountProvider{}}, zap.NewNop())
+	router := gin.New()
+	router.GET("/exchanges/:provider/futures/usdcm/account/balances", handler.USDCMFuturesAccountBalances)
+	router.GET("/exchanges/:provider/futures/usdcm/account/positions", handler.USDCMFuturesAccountPositions)
+
+	for _, path := range []string{
+		"/exchanges/bitget/futures/usdcm/account/balances",
+		"/exchanges/bitget/futures/usdcm/account/positions?symbol=BTCPERP",
+	} {
+		response := httptest.NewRecorder()
+		router.ServeHTTP(response, httptest.NewRequest(http.MethodGet, path, nil))
+		if response.Code != http.StatusOK || !strings.Contains(response.Body.String(), `"provider":"bitget"`) {
+			t.Fatalf("path %s response = %d: %s", path, response.Code, response.Body.String())
+		}
+	}
+}
+
 func TestExchangeBitgetCOINAccountRoutesUseAccountCapability(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	handler := NewExchange([]exchange.Provider{stubBitgetAccountProvider{}}, zap.NewNop())
@@ -89,6 +108,14 @@ func (stubBitgetAccountProvider) USDSMFuturesAccountBalances(context.Context) ([
 
 func (stubBitgetAccountProvider) USDSMFuturesPositions(context.Context, string) ([]exchange.FuturesPosition, error) {
 	return []exchange.FuturesPosition{{Symbol: "BTCUSDT", PositionSide: "LONG"}}, nil
+}
+
+func (stubBitgetAccountProvider) USDCMFuturesAccountBalances(context.Context) ([]exchange.FuturesAccountBalance, error) {
+	return []exchange.FuturesAccountBalance{{Asset: "USDC", Balance: "100"}}, nil
+}
+
+func (stubBitgetAccountProvider) USDCMFuturesPositions(context.Context, string) ([]exchange.FuturesPosition, error) {
+	return []exchange.FuturesPosition{{Symbol: "BTCPERP", PositionSide: "SHORT"}}, nil
 }
 
 func (stubBitgetAccountProvider) COINMFuturesAccountBalances(context.Context) ([]exchange.FuturesAccountBalance, error) {

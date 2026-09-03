@@ -51,6 +51,10 @@ tags:
     x-displayName: COIN-FUTURES
     parent: Bitget
     description: Bitget COIN-FUTURES 接口
+  - name: BitgetUSDCFutures
+    x-displayName: USDC-M Futures
+    parent: Bitget
+    description: Bitget USDC-FUTURES 接口
   - name: Weex
     x-displayName: Weex
     parent: Exchanges
@@ -778,6 +782,296 @@ paths:
           $ref: "#/components/responses/EndpointNotSupported"
         "502":
           $ref: "#/components/responses/UpstreamError"
+  /api/v1/exchanges/{provider}/futures/usdcm/ping:
+    get:
+      tags: [BitgetUSDCFutures]
+      operationId: getUsdcMFuturesPing
+      summary: Bitget USDC-M Futures API 连通性检查
+      parameters:
+        - $ref: "#/components/parameters/BitgetProvider"
+      responses:
+        "200":
+          description: Bitget USDC-FUTURES API 可访问
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FuturesPing"
+        "404":
+          $ref: "#/components/responses/ProviderNotFound"
+        "501":
+          $ref: "#/components/responses/EndpointNotSupported"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
+  /api/v1/exchanges/{provider}/futures/usdcm/time:
+    get:
+      tags: [BitgetUSDCFutures]
+      operationId: getUsdcMFuturesServerTime
+      summary: 获取 Bitget USDC-M Futures 服务器时间
+      parameters:
+        - $ref: "#/components/parameters/BitgetProvider"
+      responses:
+        "200":
+          description: Bitget USDC-FUTURES 服务器时间（毫秒）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FuturesServerTime"
+        "404":
+          $ref: "#/components/responses/ProviderNotFound"
+        "501":
+          $ref: "#/components/responses/EndpointNotSupported"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
+  /api/v1/exchanges/{provider}/futures/usdcm/exchange-info:
+    get:
+      tags: [BitgetUSDCFutures]
+      operationId: getUsdcMFuturesExchangeInfo
+      summary: 获取 Bitget USDC-M Futures 交易规则
+      parameters:
+        - $ref: "#/components/parameters/BitgetProvider"
+      responses:
+        "200":
+          description: Bitget USDC-FUTURES 交易规则和合约信息
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FuturesExchangeInfo"
+        "404":
+          $ref: "#/components/responses/ProviderNotFound"
+        "501":
+          $ref: "#/components/responses/EndpointNotSupported"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
+  /api/v1/exchanges/{provider}/futures/usdcm/depth:
+    get:
+      tags: [BitgetUSDCFutures]
+      operationId: getUsdcMFuturesDepth
+      summary: 获取 Bitget USDC-M Futures 订单簿
+      parameters:
+        - $ref: "#/components/parameters/BitgetProvider"
+        - $ref: "#/components/parameters/USDCMFuturesSymbol"
+        - name: limit
+          in: query
+          required: false
+          description: 返回的买卖盘档位数；Bitget 支持 1、5、15、50、100 或 150
+          schema:
+            type: integer
+            format: int32
+            enum: [1, 5, 15, 50, 100, 150]
+            default: 100
+      responses:
+        "200":
+          description: Bitget USDC-FUTURES 订单簿深度
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FuturesDepth"
+        "400":
+          $ref: "#/components/responses/InvalidParameter"
+        "404":
+          $ref: "#/components/responses/ProviderNotFound"
+        "501":
+          $ref: "#/components/responses/EndpointNotSupported"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
+  /api/v1/exchanges/{provider}/futures/usdcm/klines:
+    get:
+      tags: [BitgetUSDCFutures]
+      operationId: getUsdcMFuturesKlines
+      summary: 获取 Bitget USDC-M Futures K 线
+      parameters:
+        - $ref: "#/components/parameters/BitgetProvider"
+        - $ref: "#/components/parameters/USDCMFuturesSymbol"
+        - name: interval
+          in: query
+          required: true
+          description: K 线间隔；Bitget 支持 1m、3m、5m、15m、30m、1h、4h、6h、12h、1d、3d、1w、1M
+          schema:
+            type: string
+            enum: [1m, 3m, 5m, 15m, 30m, 1h, 4h, 6h, 12h, 1d, 3d, 1w, 1M]
+            examples: [1m]
+        - name: startTime
+          in: query
+          required: false
+          description: 起始时间（毫秒）
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+        - name: endTime
+          in: query
+          required: false
+          description: 结束时间（毫秒）
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+        - name: limit
+          in: query
+          required: false
+          description: 返回的 K 线数量
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 1000
+            default: 100
+      responses:
+        "200":
+          description: Bitget USDC-FUTURES K 线数据
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FuturesKlines"
+        "400":
+          $ref: "#/components/responses/InvalidParameter"
+        "404":
+          $ref: "#/components/responses/ProviderNotFound"
+        "501":
+          $ref: "#/components/responses/EndpointNotSupported"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
+  /api/v1/exchanges/{provider}/futures/usdcm/ticker/24hr:
+    get:
+      tags: [BitgetUSDCFutures]
+      operationId: getUsdcMFuturesTicker24hr
+      summary: 获取 Bitget USDC-M Futures 24 小时行情
+      parameters:
+        - $ref: "#/components/parameters/BitgetProvider"
+        - $ref: "#/components/parameters/USDCMFuturesSymbol"
+      responses:
+        "200":
+          description: Bitget USDC-FUTURES 24 小时价格变化统计
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FuturesTicker24hr"
+        "400":
+          $ref: "#/components/responses/InvalidParameter"
+        "404":
+          $ref: "#/components/responses/ProviderNotFound"
+        "501":
+          $ref: "#/components/responses/EndpointNotSupported"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
+  /api/v1/exchanges/{provider}/futures/usdcm/ticker/price:
+    get:
+      tags: [BitgetUSDCFutures]
+      operationId: getUsdcMFuturesTickerPrice
+      summary: 获取 Bitget USDC-M Futures 最新价格
+      parameters:
+        - $ref: "#/components/parameters/BitgetProvider"
+        - $ref: "#/components/parameters/USDCMFuturesSymbol"
+      responses:
+        "200":
+          description: Bitget USDC-FUTURES 最新价格
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FuturesTickerPrice"
+        "400":
+          $ref: "#/components/responses/InvalidParameter"
+        "404":
+          $ref: "#/components/responses/ProviderNotFound"
+        "501":
+          $ref: "#/components/responses/EndpointNotSupported"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
+  /api/v1/exchanges/{provider}/futures/usdcm/ticker/book:
+    get:
+      tags: [BitgetUSDCFutures]
+      operationId: getUsdcMFuturesBookTicker
+      summary: 获取 Bitget USDC-M Futures 最优买卖价
+      parameters:
+        - $ref: "#/components/parameters/BitgetProvider"
+        - $ref: "#/components/parameters/USDCMFuturesSymbol"
+      responses:
+        "200":
+          description: Bitget USDC-FUTURES 最优买价和卖价
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FuturesBookTicker"
+        "400":
+          $ref: "#/components/responses/InvalidParameter"
+        "404":
+          $ref: "#/components/responses/ProviderNotFound"
+        "501":
+          $ref: "#/components/responses/EndpointNotSupported"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
+  /api/v1/exchanges/{provider}/futures/usdcm/premium-index:
+    get:
+      tags: [BitgetUSDCFutures]
+      operationId: getUsdcMFuturesPremiumIndex
+      summary: 获取 Bitget USDC-M Futures 标记价格和资金费率
+      parameters:
+        - $ref: "#/components/parameters/BitgetProvider"
+        - $ref: "#/components/parameters/USDCMFuturesSymbol"
+      responses:
+        "200":
+          description: Bitget USDC-FUTURES 标记价格、指数价格和资金费率
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FuturesPremiumIndex"
+        "400":
+          $ref: "#/components/responses/InvalidParameter"
+        "404":
+          $ref: "#/components/responses/ProviderNotFound"
+        "501":
+          $ref: "#/components/responses/EndpointNotSupported"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
+  /api/v1/exchanges/{provider}/futures/usdcm/account/balances:
+    get:
+      tags: [BitgetUSDCFutures]
+      operationId: getUsdcMFuturesAccountBalances
+      summary: 获取 Bitget USDC-M Futures 账户余额
+      parameters:
+        - $ref: "#/components/parameters/BitgetProvider"
+      responses:
+        "200":
+          description: Bitget USDC-FUTURES 账户余额
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FuturesAccountBalances"
+        "404":
+          $ref: "#/components/responses/ProviderNotFound"
+        "501":
+          $ref: "#/components/responses/EndpointNotSupported"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
+  /api/v1/exchanges/{provider}/futures/usdcm/account/positions:
+    get:
+      tags: [BitgetUSDCFutures]
+      operationId: getUsdcMFuturesAccountPositions
+      summary: 获取 Bitget USDC-M Futures 账户持仓
+      parameters:
+        - $ref: "#/components/parameters/BitgetProvider"
+        - name: symbol
+          in: query
+          required: false
+          description: 合约交易对；不传则返回全部持仓
+          schema:
+            type: string
+            examples: [BTCPERP]
+      responses:
+        "200":
+          description: Bitget USDC-FUTURES 账户持仓
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FuturesPositions"
+        "400":
+          $ref: "#/components/responses/InvalidParameter"
+        "404":
+          $ref: "#/components/responses/ProviderNotFound"
+        "501":
+          $ref: "#/components/responses/EndpointNotSupported"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/coinm/ping:
     get:
       tags: [BinanceCoinM, BitgetCoinFutures]
@@ -1165,6 +1459,14 @@ components:
       schema:
         type: string
         enum: [binance]
+    BitgetProvider:
+      name: provider
+      in: path
+      required: true
+      description: Bitget 交易所标识
+      schema:
+        type: string
+        enum: [bitget]
     WeexProvider:
       name: provider
       in: path
@@ -1197,6 +1499,14 @@ components:
       schema:
         type: string
         examples: [BTCUSD_PERP, BTCUSD]
+    USDCMFuturesSymbol:
+      name: symbol
+      in: query
+      required: true
+      description: Bitget USDC-FUTURES 合约交易对
+      schema:
+        type: string
+        examples: [BTCPERP]
   headers:
     RequestID:
       description: 请求追踪标识
@@ -1690,7 +2000,7 @@ components:
           format: int64
         futures_type:
           type: string
-          examples: [U_MARGINED, USDT-FUTURES, WEEX_CONTRACT]
+          examples: [U_MARGINED, USDT-FUTURES, USDC-FUTURES, WEEX_CONTRACT]
         rate_limits:
           type: array
           items:
