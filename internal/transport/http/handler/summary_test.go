@@ -29,6 +29,7 @@ func TestSummaryIncludeZeroQuery(t *testing.T) {
 	}{
 		{name: "default preserves provider response", path: "/api/v1/summary", statusCode: http.StatusOK, contains: "ZERO"},
 		{name: "false filters zero values", path: "/api/v1/summary?include_zero=false", statusCode: http.StatusOK, contains: "BTC", notContain: "ZERO"},
+		{name: "exclude alias filters zero values", path: "/api/v1/summary?exclude_zero=true", statusCode: http.StatusOK, contains: "BTC", notContain: "ZERO"},
 		{name: "true keeps zero values", path: "/api/v1/summary?include_zero=true", statusCode: http.StatusOK, contains: "ZERO"},
 		{name: "invalid boolean", path: "/api/v1/summary?include_zero=maybe", statusCode: http.StatusBadRequest, contains: "invalid_parameter"},
 	}

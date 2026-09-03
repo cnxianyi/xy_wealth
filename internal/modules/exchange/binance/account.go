@@ -111,7 +111,7 @@ func (c *Client) USDSMFuturesPositions(ctx context.Context, symbol string) ([]ex
 	if err := c.getSignedFuturesJSON(ctx, "/fapi/v3/positionRisk", query, &response); err != nil {
 		return nil, err
 	}
-	return normalizeFuturesPositions(response), nil
+	return normalizeFuturesPositions(c.includeZero, response), nil
 }
 
 // COINMFuturesPositions returns Binance COIN-M Futures positions. An empty
@@ -127,7 +127,7 @@ func (c *Client) COINMFuturesPositions(ctx context.Context, symbol string) ([]ex
 	if err := c.getSignedCoinMFuturesJSON(ctx, "/dapi/v1/positionRisk", query, &response); err != nil {
 		return nil, err
 	}
-	return normalizeFuturesPositions(response), nil
+	return normalizeFuturesPositions(c.includeZero, response), nil
 }
 
 func futuresPositionQuery(symbol string) (url.Values, error) {
@@ -219,9 +219,12 @@ func futuresAccountBalanceNonZero(item futuresAccountBalanceResponse) (bool, err
 	return false, nil
 }
 
-func normalizeFuturesPositions(response []futuresPositionResponse) []exchange.FuturesPosition {
+func normalizeFuturesPositions(includeZero bool, response []futuresPositionResponse) []exchange.FuturesPosition {
 	positions := make([]exchange.FuturesPosition, 0, len(response))
 	for _, item := range response {
+		if !includeZero && isZeroPositionAmount(item.PositionAmount) {
+			continue
+		}
 		var autoAddMargin *bool
 		if item.IsAutoAddMargin != nil {
 			value := bool(*item.IsAutoAddMargin)
@@ -258,4 +261,9 @@ func normalizeFuturesPositions(response []futuresPositionResponse) []exchange.Fu
 		})
 	}
 	return positions
+}
+
+func isZeroPositionAmount(value string) bool {
+	amount, err := decimal.NewFromString(strings.TrimSpace(value))
+	return err == nil && amount.IsZero()
 }

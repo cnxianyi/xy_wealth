@@ -45,7 +45,7 @@ func TestClientFuturesAccountEndpoints(t *testing.T) {
 			if got := query.Get("symbol"); got != "" && got != "BTCUSDT" {
 				t.Errorf("USDⓈ-M position symbol = %q, want empty or BTCUSDT", got)
 			}
-			_, _ = w.Write([]byte(`[{"symbol":"BTCUSDT","positionSide":"BOTH","positionAmt":"0.100","entryPrice":"60000.00","breakEvenPrice":"60001.00","markPrice":"60100.00","unRealizedProfit":"10.00","liquidationPrice":"50000.00","leverage":"20","marginType":"isolated","isolatedMargin":"300.00","isAutoAddMargin":"false","notional":"6010.00","isolatedWallet":"300.00","initialMargin":"300.50","maintMargin":"30.00","positionInitialMargin":"300.50","openOrderInitialMargin":"0","maxNotionalValue":"1000000","bidNotional":"0","askNotional":"0","adl":2,"updateTime":1700000003000}]`))
+			_, _ = w.Write([]byte(`[{"symbol":"BTCUSDT","positionSide":"BOTH","positionAmt":"0.100","entryPrice":"60000.00","breakEvenPrice":"60001.00","markPrice":"60100.00","unRealizedProfit":"10.00","liquidationPrice":"50000.00","leverage":"20","marginType":"isolated","isolatedMargin":"300.00","isAutoAddMargin":"false","notional":"6010.00","isolatedWallet":"300.00","initialMargin":"300.50","maintMargin":"30.00","positionInitialMargin":"300.50","openOrderInitialMargin":"0","maxNotionalValue":"1000000","bidNotional":"0","askNotional":"0","adl":2,"updateTime":1700000003000},{"symbol":"UNIUSDT","positionSide":"BOTH","positionAmt":"0","entryPrice":"0.00000000","breakEvenPrice":"0.00000000","markPrice":"0.00000000","unRealizedProfit":"0.00000000","liquidationPrice":"0","leverage":"20","marginType":"cross","isolatedMargin":"0.00000000","isAutoAddMargin":false,"notional":"0","isolatedWallet":"0","maxQty":"10000.0","updateTime":0}]`))
 		case "/dapi/v1/positionRisk":
 			if got := query.Get("pair"); got != "BTCUSD" {
 				t.Errorf("COIN-M position pair = %q, want BTCUSD", got)
@@ -53,7 +53,7 @@ func TestClientFuturesAccountEndpoints(t *testing.T) {
 			if got := query.Get("symbol"); got != "" {
 				t.Errorf("COIN-M position symbol = %q, want empty", got)
 			}
-			_, _ = w.Write([]byte(`[{"symbol":"BTCUSD_PERP","positionAmt":"2","entryPrice":"60000.00","breakEvenPrice":"60010.00","markPrice":"60100.00","unRealizedProfit":"0.001","liquidationPrice":"50000.00","leverage":"10","maxQty":"100","marginType":"cross","isolatedMargin":"0","isAutoAddMargin":false,"positionSide":"BOTH","updateTime":1700000004000,"notionalValue":"0.03327787"}]`))
+			_, _ = w.Write([]byte(`[{"symbol":"BTCUSD_PERP","positionAmt":"2","entryPrice":"60000.00","breakEvenPrice":"60010.00","markPrice":"60100.00","unRealizedProfit":"0.001","liquidationPrice":"50000.00","leverage":"10","maxQty":"100","marginType":"cross","isolatedMargin":"0","isAutoAddMargin":false,"positionSide":"BOTH","updateTime":1700000004000,"notionalValue":"0.03327787"},{"symbol":"UNIUSD_PERP","positionAmt":"0","entryPrice":"0.00000000","breakEvenPrice":"0.00000000","markPrice":"0.00000000","unRealizedProfit":"0.00000000","liquidationPrice":"0","leverage":"20","marginType":"cross","isolatedMargin":"0.00000000","isAutoAddMargin":false,"positionSide":"SHORT","updateTime":0,"notionalValue":"0"}]`))
 		default:
 			http.NotFound(w, r)
 		}

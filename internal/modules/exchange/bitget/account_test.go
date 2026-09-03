@@ -44,7 +44,7 @@ func TestClientUSDTFuturesAccountEndpoints(t *testing.T) {
 			if got := r.URL.Query().Get("symbol"); got != "" || r.URL.Query().Get("marginCoin") != "" {
 				t.Errorf("all-position filters = %s", r.URL.RawQuery)
 			}
-			_, _ = w.Write([]byte(`{"code":"00000","msg":"success","data":[{"marginCoin":"USDT","symbol":"BTCUSDT","holdSide":"short","marginSize":"10","available":"0.1","locked":"0","total":"0.1","leverage":"10","openPriceAvg":"60000","marginMode":"crossed","unrealizedPL":"-2","liquidationPrice":"70000","markPrice":"61000","breakEvenPrice":"60010","uTime":"1700000001000","autoMargin":"off"}]}`))
+			_, _ = w.Write([]byte(`{"code":"00000","msg":"success","data":[{"marginCoin":"USDT","symbol":"BTCUSDT","holdSide":"short","marginSize":"10","available":"0.1","locked":"0","total":"0.1","leverage":"10","openPriceAvg":"60000","marginMode":"crossed","unrealizedPL":"-2","liquidationPrice":"70000","markPrice":"61000","breakEvenPrice":"60010","uTime":"1700000001000","autoMargin":"off"},{"marginCoin":"USDT","symbol":"UNIUSDT","holdSide":"long","marginSize":"0","available":"0","locked":"0","total":"0.00000000","leverage":"20","openPriceAvg":"0","marginMode":"crossed","unrealizedPL":"0","liquidationPrice":"0","markPrice":"0","breakEvenPrice":"0","uTime":"0","autoMargin":"off"}]}`))
 		case "/api/v2/mix/position/single-position":
 			if got := r.URL.Query().Get("symbol"); got != "ETHUSDT" || r.URL.Query().Get("marginCoin") != "USDT" {
 				t.Errorf("single-position filters = %s", r.URL.RawQuery)

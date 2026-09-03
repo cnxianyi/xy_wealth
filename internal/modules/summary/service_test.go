@@ -87,9 +87,9 @@ func TestServiceGetWithOptionsFiltersZeroValues(t *testing.T) {
 			},
 			Products: []ProductData{{
 				FuturesBalances:   []exchange.FuturesAccountBalance{{Asset: "ZERO", Balance: "0"}, {Asset: "USDT", Balance: "2"}},
-				FuturesPositions:  []exchange.FuturesPosition{{Symbol: "ZERO", PositionAmount: "0"}, {Symbol: "BTCUSDT", PositionAmount: "1"}},
+				FuturesPositions:  []exchange.FuturesPosition{{Symbol: "ZERO", PositionAmount: "0.00000000"}, {Symbol: "BTCUSDT", PositionAmount: "1"}},
 				ContractBalances:  []asset.Balance{{Symbol: "ZERO", Total: "0"}, {Symbol: "USDT", Total: "3"}},
-				ContractPositions: []exchange.ContractPosition{{Symbol: "ZERO", Size: "0"}, {Symbol: "BTCUSDT", Size: "1"}},
+				ContractPositions: []exchange.ContractPosition{{Symbol: "ZERO", Size: "0.00000000"}, {Symbol: "BTCUSDT", Size: "1"}},
 			}},
 		}},
 		Banks: []BankData{{Accounts: []bank.Account{{Currency: "CNY", Balance: "0"}, {Currency: "USD", Balance: "4"}}}},

@@ -102,6 +102,18 @@ func (c *Client) futuresPositions(ctx context.Context, symbol, productType, marg
 	}
 	positions := make([]exchange.FuturesPosition, 0, len(response))
 	for _, item := range response {
+		if !c.includeZero {
+			total := strings.TrimSpace(string(item.Total))
+			if total != "" {
+				amount, err := decimal.NewFromString(total)
+				if err != nil {
+					return nil, fmt.Errorf("parse %s position amount: %w", item.Symbol, err)
+				}
+				if amount.IsZero() {
+					continue
+				}
+			}
+		}
 		updateTime, err := parseOptionalInt(string(item.UpdateTime))
 		if err != nil {
 			return nil, fmt.Errorf("parse %s position update time: %w", item.Symbol, err)

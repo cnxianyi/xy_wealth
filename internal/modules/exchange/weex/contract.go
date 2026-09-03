@@ -489,6 +489,18 @@ func (c *Client) ContractPositions(ctx context.Context, symbol string) ([]exchan
 	}
 	positions := make([]exchange.ContractPosition, 0, len(response))
 	for _, item := range response {
+		if !c.includeZero {
+			size := strings.TrimSpace(item.Size)
+			if size != "" {
+				amount, err := decimal.NewFromString(size)
+				if err != nil {
+					return nil, fmt.Errorf("parse contract %s position size: %w", item.Symbol, err)
+				}
+				if amount.IsZero() {
+					continue
+				}
+			}
+		}
 		positions = append(positions, exchange.ContractPosition{
 			ID:                         item.ID,
 			Asset:                      item.Asset,

@@ -45,18 +45,35 @@ func (h *Summary) Banks(c *gin.Context) {
 func parseSummaryOptions(c *gin.Context) (summary.Options, bool) {
 	value, exists := c.GetQuery("include_zero")
 	if !exists {
+		if excluded, hasExclude := c.GetQuery("exclude_zero"); hasExclude {
+			value = excluded
+			exists = true
+			parsed, err := strconv.ParseBool(value)
+			if err != nil {
+				writeSummaryBooleanError(c, "exclude_zero")
+				return summary.Options{}, false
+			}
+			includeZero := !parsed
+			return summary.Options{IncludeZero: &includeZero}, true
+		}
+	}
+	if !exists {
 		return summary.Options{}, true
 	}
 	includeZero, err := strconv.ParseBool(value)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": gin.H{
-				"code":      "invalid_parameter",
-				"message":   "include_zero must be a boolean",
-				"parameter": "include_zero",
-			},
-		})
+		writeSummaryBooleanError(c, "include_zero")
 		return summary.Options{}, false
 	}
 	return summary.Options{IncludeZero: &includeZero}, true
+}
+
+func writeSummaryBooleanError(c *gin.Context, parameter string) {
+	c.JSON(http.StatusBadRequest, gin.H{
+		"error": gin.H{
+			"code":      "invalid_parameter",
+			"message":   parameter + " must be a boolean",
+			"parameter": parameter,
+		},
+	})
 }

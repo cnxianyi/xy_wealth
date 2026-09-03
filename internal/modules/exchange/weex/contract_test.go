@@ -242,7 +242,7 @@ func TestClientContractPositionsAndSignature(t *testing.T) {
 			t.Errorf("signature = %q, want %q", got, want)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`[{"id":1,"asset":"USDT","symbol":"BTCUSDT","side":"LONG","marginType":"CROSSED","separatedMode":"COMBINED","separatedOpenOrderId":0,"leverage":"20","size":"0.020000","openValue":"1801.0670000","openFee":"0.70731060","fundingFee":"1.22618160","marginSize":"17.154980","isolatedMargin":"0","isAutoAppendIsolatedMargin":false,"cumOpenSize":"0.020000","cumOpenValue":"1801.0670000","cumOpenFee":"0.70731060","cumCloseSize":"0","cumCloseValue":"0","cumCloseFee":"0","cumFundingFee":"1.22618160","cumLiquidateFee":"0","createdMatchSequenceId":10,"updatedMatchSequenceId":11,"createdTime":1700000000000,"updatedTime":1700000001000,"unrealizePnl":"-85.5690000","liquidatePrice":"0"}]`))
+		_, _ = w.Write([]byte(`[{"id":1,"asset":"USDT","symbol":"BTCUSDT","side":"LONG","marginType":"CROSSED","separatedMode":"COMBINED","separatedOpenOrderId":0,"leverage":"20","size":"0.020000","openValue":"1801.0670000","openFee":"0.70731060","fundingFee":"1.22618160","marginSize":"17.154980","isolatedMargin":"0","isAutoAppendIsolatedMargin":false,"cumOpenSize":"0.020000","cumOpenValue":"1801.0670000","cumOpenFee":"0.70731060","cumCloseSize":"0","cumCloseValue":"0","cumCloseFee":"0","cumFundingFee":"1.22618160","cumLiquidateFee":"0","createdMatchSequenceId":10,"updatedMatchSequenceId":11,"createdTime":1700000000000,"updatedTime":1700000001000,"unrealizePnl":"-85.5690000","liquidatePrice":"0"},{"id":2,"asset":"USDT","symbol":"UNIUSDT","side":"SHORT","marginType":"CROSSED","separatedMode":"COMBINED","leverage":"20","size":"0.00000000"}]`))
 	}))
 	defer server.Close()
 
