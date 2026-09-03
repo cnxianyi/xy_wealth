@@ -7,6 +7,9 @@ auth:
   secret: ""
   token_ttl: 24h
 
+web:
+  static_dir: web/dist
+
 http:
   address: ":8080"
   read_timeout: 10s

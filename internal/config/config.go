@@ -14,6 +14,7 @@ type Config struct {
 	App      AppConfig      `mapstructure:"app"`
 	Auth     AuthConfig     `mapstructure:"auth"`
 	HTTP     HTTPConfig     `mapstructure:"http"`
+	Web      WebConfig      `mapstructure:"web"`
 	Log      LogConfig      `mapstructure:"log"`
 	Postgres PostgresConfig `mapstructure:"postgres"`
 	Redis    RedisConfig    `mapstructure:"redis"`
@@ -25,6 +26,10 @@ type Config struct {
 type AuthConfig struct {
 	Secret   string        `mapstructure:"secret"`
 	TokenTTL time.Duration `mapstructure:"token_ttl"`
+}
+
+type WebConfig struct {
+	StaticDir string `mapstructure:"static_dir"`
 }
 
 type AppConfig struct {
@@ -163,6 +168,7 @@ var envKeys = []string{
 	"app.name", "app.environment",
 	"auth.secret", "auth.token_ttl",
 	"http.address", "http.read_timeout", "http.write_timeout", "http.idle_timeout", "http.shutdown_timeout",
+	"web.static_dir",
 	"log.level", "log.encoding",
 	"postgres.dsn", "postgres.max_open_conns", "postgres.max_idle_conns", "postgres.conn_max_lifetime", "postgres.conn_max_idle_time",
 	"redis.address", "redis.password", "redis.db", "redis.pool_size", "redis.dial_timeout", "redis.read_timeout", "redis.write_timeout",
@@ -175,6 +181,7 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("app.name", "xy-wealth")
 	v.SetDefault("app.environment", "development")
 	v.SetDefault("auth.token_ttl", "24h")
+	v.SetDefault("web.static_dir", "web/dist")
 	v.SetDefault("http.address", ":8080")
 	v.SetDefault("http.read_timeout", "10s")
 	v.SetDefault("http.write_timeout", "30s")

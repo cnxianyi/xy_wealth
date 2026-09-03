@@ -32,3 +32,11 @@ subject 允许使用中文更好的描述
 ```text
 <type>(<scope>): <subject>
 ```
+
+## Web 与鉴权
+
+- 前端位于 `web/`，使用 React、TypeScript、Vite、React Router、TanStack Query/Table 与 Tailwind CSS；参考 Wealthfolio 的信息层级和视觉语言时必须重新实现，不直接复制其源码、品牌或图片资源。
+- 前端只展示当前后端已有数据；没有统一法币估值、历史快照或业务接口时，不得伪造总资产、收益曲线或对应页面。
+- 本地登录使用配置中的 `auth.secret`；登录成功签发随机 `x-token`，会话存储在 Redis 且只保存 Token 摘要。
+- 除登录、前端静态资源和 `/health/live` 外，现有接口都必须校验 `x-token`；禁止在日志、错误或响应中泄露 Secret 和 Token。
+- Web 完成修改后至少运行 `pnpm --dir web lint`、`pnpm --dir web test` 和 `pnpm --dir web build`。

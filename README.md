@@ -22,6 +22,7 @@ internal/modules/summary/          跨数据源并发聚合
 internal/platform/                 PostgreSQL、Redis、Zap 等基础设施
 internal/transport/http/           Gin 路由、中间件和 Handler
 migrations/                        原生 SQL 迁移
+web/                               React + TypeScript Web 前端
 ```
 
 依赖方向是 `transport -> modules -> domain`，外部系统适配器实现模块接口。新增交易所或银行时，应创建新的 provider 包并在 `internal/app/app.go` 注册。
@@ -37,6 +38,15 @@ docker compose up -d postgres redis
 set -a; source .env; set +a
 go run ./cmd/server
 ```
+
+前端开发服务器使用 Vite，并将 API 请求代理到 `http://127.0.0.1:8080`：
+
+```bash
+pnpm --dir web install
+pnpm --dir web dev
+```
+
+生产构建时先执行 `pnpm --dir web build`。Gin 会从 `web.static_dir`（默认 `web/dist`）提供静态资源，并为 `/login`、`/holdings`、`/exchanges` 等客户端路由提供 SPA fallback。也可以执行 `make build` 同时构建前端和 Go 服务。
 
 也可以复制 `configs/config.example.yaml` 为 `configs/config.yaml`。环境变量优先级更高，命名规则为 `XY_WEALTH_` 加配置路径，例如 `postgres.dsn` 对应 `XY_WEALTH_POSTGRES_DSN`。可通过 `XY_WEALTH_CONFIG_FILE` 指定其他配置文件。
 
@@ -173,6 +183,13 @@ Weex 公共 Spot/Contract 接口不需要密钥；账户余额查询需要配置
 当前 COIN-M Futures 开放只读基础行情、账户余额和账户持仓查询；合约下单、保证金调整和用户数据流属于后续阶段。
 
 当前 Bitget Spot 开放连通性、服务器时间、交易规则、订单簿、K 线、行情和账户余额查询；Bitget USDT-FUTURES、COIN-FUTURES 和 USDC-FUTURES 开放只读合约行情、账户余额和账户持仓查询；交易写操作和其他合约产品属于后续阶段。
+
+## Web 页面
+
+- `/login`：输入本地配置 Secret 获取 x-token；Secret 不在浏览器中保存。
+- `/`：展示 Provider 状态、余额条目、非零仓位和数据更新时间。当前没有统一法币估值与历史快照，因此不显示虚构的总资产或收益曲线。
+- `/holdings`：按 Spot、合约余额和合约仓位查看汇总数据，并支持 Provider、产品和关键字筛选。
+- `/exchanges`：按 Binance、Bitget、Weex 及其产品展示连接状态、余额和持仓概况。
 
 当前 Weex Spot 开放连通性、服务器时间、交易规则、订单簿、K 线、行情和账户余额查询；Weex Contract 开放对应的只读合约行情，以及签名账户余额和持仓查询接口。Spot/Contract 交易写操作属于后续阶段，分别使用 `/api/v1/exchanges/{provider}/spot/...` 和 `/api/v1/exchanges/{provider}/futures/usdm/...` 路由。
 

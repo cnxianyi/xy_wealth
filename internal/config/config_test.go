@@ -35,6 +35,9 @@ func TestLoadDefaultsAndEnvironmentOverrides(t *testing.T) {
 	if cfg.Auth.Secret != "test-auth-secret" || cfg.Auth.TokenTTL != 24*time.Hour {
 		t.Fatalf("auth config = %#v, want configured secret and 24h TTL", cfg.Auth)
 	}
+	if cfg.Web.StaticDir != "web/dist" {
+		t.Fatalf("web static directory = %q, want web/dist", cfg.Web.StaticDir)
+	}
 	if cfg.Binance.FuturesBaseURL != "https://fapi.binance.com" {
 		t.Fatalf("Futures base URL = %q, want https://fapi.binance.com", cfg.Binance.FuturesBaseURL)
 	}

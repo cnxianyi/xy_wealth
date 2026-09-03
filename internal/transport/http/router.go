@@ -102,5 +102,7 @@ func NewRouter(
 	protected.GET("/summary/exchanges", summaryHandler.Exchanges)
 	protected.GET("/summary/banks", summaryHandler.Banks)
 
+	registerSPA(router, cfg.Web.StaticDir, log)
+
 	return router
 }

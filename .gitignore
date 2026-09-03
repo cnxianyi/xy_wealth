@@ -9,6 +9,9 @@ configs/config.*.yaml
 # Build and coverage output
 /bin/
 /dist/
+/web/dist/
+/web/node_modules/
+/web/coverage/
 *.out
 coverage.*
 
@@ -16,4 +19,3 @@ coverage.*
 .idea/
 .vscode/
 .DS_Store
-
