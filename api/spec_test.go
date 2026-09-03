@@ -78,6 +78,7 @@ func TestSpecificationIsOpenAPI31(t *testing.T) {
 		"/api/v1/exchanges/{provider}/futures/usdm/ticker/price",
 		"/api/v1/exchanges/{provider}/futures/usdm/ticker/book",
 		"/api/v1/exchanges/{provider}/futures/usdm/premium-index",
+		"/api/v1/exchanges/{provider}/futures/usdm/positions",
 		"/api/v1/exchanges/{provider}/futures/coinm/ping",
 		"/api/v1/exchanges/{provider}/futures/coinm/time",
 		"/api/v1/exchanges/{provider}/futures/coinm/exchange-info",

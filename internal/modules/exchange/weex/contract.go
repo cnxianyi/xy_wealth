@@ -118,7 +118,40 @@ type contractBalanceResponse struct {
 	UnrealizePnl     string `json:"unrealizePnl"`
 }
 
+type contractPositionResponse struct {
+	ID                         int64  `json:"id"`
+	Asset                      string `json:"asset"`
+	Symbol                     string `json:"symbol"`
+	Side                       string `json:"side"`
+	MarginType                 string `json:"marginType"`
+	SeparatedMode              string `json:"separatedMode"`
+	SeparatedOpenOrderID       int64  `json:"separatedOpenOrderId"`
+	Leverage                   string `json:"leverage"`
+	Size                       string `json:"size"`
+	OpenValue                  string `json:"openValue"`
+	OpenFee                    string `json:"openFee"`
+	FundingFee                 string `json:"fundingFee"`
+	MarginSize                 string `json:"marginSize"`
+	IsolatedMargin             string `json:"isolatedMargin"`
+	IsAutoAppendIsolatedMargin bool   `json:"isAutoAppendIsolatedMargin"`
+	CumOpenSize                string `json:"cumOpenSize"`
+	CumOpenValue               string `json:"cumOpenValue"`
+	CumOpenFee                 string `json:"cumOpenFee"`
+	CumCloseSize               string `json:"cumCloseSize"`
+	CumCloseValue              string `json:"cumCloseValue"`
+	CumCloseFee                string `json:"cumCloseFee"`
+	CumFundingFee              string `json:"cumFundingFee"`
+	CumLiquidateFee            string `json:"cumLiquidateFee"`
+	CreatedMatchSequenceID     int64  `json:"createdMatchSequenceId"`
+	UpdatedMatchSequenceID     int64  `json:"updatedMatchSequenceId"`
+	CreatedTime                int64  `json:"createdTime"`
+	UpdatedTime                int64  `json:"updatedTime"`
+	UnrealizePnl               string `json:"unrealizePnl"`
+	LiquidatePrice             string `json:"liquidatePrice"`
+}
+
 var _ exchange.USDSMFuturesProvider = (*Client)(nil)
+var _ exchange.ContractPositionProvider = (*Client)(nil)
 
 // FuturesPing checks that the Weex Contract market API is reachable. Weex
 // Contract V3 does not expose a dedicated /ping endpoint, so the public
@@ -433,4 +466,60 @@ func (c *Client) ContractBalances(ctx context.Context) ([]asset.Balance, error) 
 		})
 	}
 	return balances, nil
+}
+
+// ContractPositions returns all open Weex Contract positions. Supplying a
+// symbol uses Weex's single-position endpoint; an empty symbol queries all
+// positions.
+func (c *Client) ContractPositions(ctx context.Context, symbol string) ([]exchange.ContractPosition, error) {
+	path := weexContractPathPrefix + "/account/position/allPosition"
+	query := url.Values{}
+	if strings.TrimSpace(symbol) != "" {
+		normalized, err := normalizeSymbol(symbol)
+		if err != nil {
+			return nil, err
+		}
+		path = weexContractPathPrefix + "/account/position/singlePosition"
+		query.Set("symbol", normalized)
+	}
+
+	var response []contractPositionResponse
+	if err := c.getSignedContractJSON(ctx, path, query, &response); err != nil {
+		return nil, err
+	}
+	positions := make([]exchange.ContractPosition, 0, len(response))
+	for _, item := range response {
+		positions = append(positions, exchange.ContractPosition{
+			ID:                         item.ID,
+			Asset:                      item.Asset,
+			Symbol:                     item.Symbol,
+			Side:                       item.Side,
+			MarginType:                 item.MarginType,
+			SeparatedMode:              item.SeparatedMode,
+			SeparatedOpenOrderID:       item.SeparatedOpenOrderID,
+			Leverage:                   item.Leverage,
+			Size:                       item.Size,
+			OpenValue:                  item.OpenValue,
+			OpenFee:                    item.OpenFee,
+			FundingFee:                 item.FundingFee,
+			MarginSize:                 item.MarginSize,
+			IsolatedMargin:             item.IsolatedMargin,
+			IsAutoAppendIsolatedMargin: item.IsAutoAppendIsolatedMargin,
+			CumOpenSize:                item.CumOpenSize,
+			CumOpenValue:               item.CumOpenValue,
+			CumOpenFee:                 item.CumOpenFee,
+			CumCloseSize:               item.CumCloseSize,
+			CumCloseValue:              item.CumCloseValue,
+			CumCloseFee:                item.CumCloseFee,
+			CumFundingFee:              item.CumFundingFee,
+			CumLiquidateFee:            item.CumLiquidateFee,
+			CreatedMatchSequenceID:     item.CreatedMatchSequenceID,
+			UpdatedMatchSequenceID:     item.UpdatedMatchSequenceID,
+			CreatedTime:                item.CreatedTime,
+			UpdatedTime:                item.UpdatedTime,
+			UnrealizePnl:               item.UnrealizePnl,
+			LiquidatePrice:             item.LiquidatePrice,
+		})
+	}
+	return positions, nil
 }

@@ -211,3 +211,65 @@ func TestClientContractBalancesRequiresCredentials(t *testing.T) {
 		t.Fatalf("ContractBalances() error = %v, want ErrCredentialsMissing", err)
 	}
 }
+
+func TestClientContractPositionsAndSignature(t *testing.T) {
+	const (
+		apiKey     = "test-api-key"
+		secretKey  = "test-secret-key"
+		passphrase = "test-passphrase"
+		timestamp  = int64(1700000000000)
+	)
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		wantPath := "/capi/v3/account/position/allPosition"
+		wantPayload := "1700000000000GET/capi/v3/account/position/allPosition"
+		if r.URL.Path == "/capi/v3/account/position/singlePosition" {
+			wantPath = "/capi/v3/account/position/singlePosition"
+			if got := r.URL.Query().Get("symbol"); got != "BTCUSDT" {
+				t.Errorf("position symbol = %q, want BTCUSDT", got)
+			}
+			wantPayload = "1700000000000GET" + wantPath + "?symbol=BTCUSDT"
+		} else if r.URL.Path != wantPath {
+			t.Errorf("path = %q, want %q", r.URL.Path, wantPath)
+		}
+		if got := r.Header.Get(accessKeyHeader); got != apiKey {
+			t.Errorf("API key header = %q, want %q", got, apiKey)
+		}
+		if got := r.Header.Get(accessTimestampHeader); got != "1700000000000" {
+			t.Errorf("timestamp header = %q, want 1700000000000", got)
+		}
+		if got, want := r.Header.Get(accessSignHeader), sign(wantPayload, secretKey); got != want {
+			t.Errorf("signature = %q, want %q", got, want)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`[{"id":1,"asset":"USDT","symbol":"BTCUSDT","side":"LONG","marginType":"CROSSED","separatedMode":"COMBINED","separatedOpenOrderId":0,"leverage":"20","size":"0.020000","openValue":"1801.0670000","openFee":"0.70731060","fundingFee":"1.22618160","marginSize":"17.154980","isolatedMargin":"0","isAutoAppendIsolatedMargin":false,"cumOpenSize":"0.020000","cumOpenValue":"1801.0670000","cumOpenFee":"0.70731060","cumCloseSize":"0","cumCloseValue":"0","cumCloseFee":"0","cumFundingFee":"1.22618160","cumLiquidateFee":"0","createdMatchSequenceId":10,"updatedMatchSequenceId":11,"createdTime":1700000000000,"updatedTime":1700000001000,"unrealizePnl":"-85.5690000","liquidatePrice":"0"}]`))
+	}))
+	defer server.Close()
+
+	client := New(config.WeexConfig{ContractBaseURL: server.URL, APIKey: apiKey, SecretKey: secretKey, Passphrase: passphrase, HTTPTimeout: time.Second})
+	client.now = func() time.Time { return time.UnixMilli(timestamp) }
+
+	positions, err := client.ContractPositions(context.Background(), "")
+	if err != nil {
+		t.Fatalf("ContractPositions(all) error = %v", err)
+	}
+	if len(positions) != 1 || positions[0].Side != "LONG" || positions[0].Size != "0.020000" || positions[0].UnrealizePnl != "-85.5690000" {
+		t.Fatalf("all positions = %#v", positions)
+	}
+
+	positions, err = client.ContractPositions(context.Background(), "btcusdt")
+	if err != nil {
+		t.Fatalf("ContractPositions(single) error = %v", err)
+	}
+	if len(positions) != 1 || positions[0].Symbol != "BTCUSDT" {
+		t.Fatalf("single positions = %#v", positions)
+	}
+}
+
+func TestClientContractPositionsRequiresCredentials(t *testing.T) {
+	client := New(config.WeexConfig{ContractBaseURL: "https://example.com", HTTPTimeout: time.Second})
+	_, err := client.ContractPositions(context.Background(), "BTCUSDT")
+	if !errors.Is(err, ErrCredentialsMissing) {
+		t.Fatalf("ContractPositions() error = %v, want ErrCredentialsMissing", err)
+	}
+}

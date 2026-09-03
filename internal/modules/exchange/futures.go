@@ -19,6 +19,15 @@ type USDSMFuturesProvider interface {
 	FuturesPremiumIndex(ctx context.Context, symbol string) (FuturesPremiumIndex, error)
 }
 
+// ContractPositionProvider exposes read-only Contract position data for
+// providers that implement a signed position endpoint. It is separate from
+// USDSMFuturesProvider so providers without a position API are not registered
+// as if that capability existed.
+type ContractPositionProvider interface {
+	Provider
+	ContractPositions(ctx context.Context, symbol string) ([]ContractPosition, error)
+}
+
 // COINMFuturesProvider is the public, read-only COIN-M Futures REST surface.
 // Trading, account and listen-key operations are separate capabilities and
 // are intentionally not part of this initial integration.
@@ -177,6 +186,40 @@ type FuturesPremiumIndex struct {
 	NextFundingTime      int64  `json:"next_funding_time,omitempty"`
 	Time                 int64  `json:"time"`
 	CollectCycle         int64  `json:"collect_cycle,omitempty"`
+}
+
+// ContractPosition describes one Weex Contract position, including its
+// direction, margin mode, size, fees, and unrealized PnL.
+type ContractPosition struct {
+	ID                         int64  `json:"id"`
+	Asset                      string `json:"asset"`
+	Symbol                     string `json:"symbol"`
+	Side                       string `json:"side"`
+	MarginType                 string `json:"margin_type"`
+	SeparatedMode              string `json:"separated_mode"`
+	SeparatedOpenOrderID       int64  `json:"separated_open_order_id"`
+	Leverage                   string `json:"leverage"`
+	Size                       string `json:"size"`
+	OpenValue                  string `json:"open_value"`
+	OpenFee                    string `json:"open_fee"`
+	FundingFee                 string `json:"funding_fee"`
+	MarginSize                 string `json:"margin_size"`
+	IsolatedMargin             string `json:"isolated_margin"`
+	IsAutoAppendIsolatedMargin bool   `json:"is_auto_append_isolated_margin"`
+	CumOpenSize                string `json:"cum_open_size"`
+	CumOpenValue               string `json:"cum_open_value"`
+	CumOpenFee                 string `json:"cum_open_fee"`
+	CumCloseSize               string `json:"cum_close_size"`
+	CumCloseValue              string `json:"cum_close_value"`
+	CumCloseFee                string `json:"cum_close_fee"`
+	CumFundingFee              string `json:"cum_funding_fee"`
+	CumLiquidateFee            string `json:"cum_liquidate_fee"`
+	CreatedMatchSequenceID     int64  `json:"created_match_sequence_id"`
+	UpdatedMatchSequenceID     int64  `json:"updated_match_sequence_id"`
+	CreatedTime                int64  `json:"created_time"`
+	UpdatedTime                int64  `json:"updated_time"`
+	UnrealizePnl               string `json:"unrealize_pnl"`
+	LiquidatePrice             string `json:"liquidate_price"`
 }
 
 type COINMFuturesTicker24hr struct {

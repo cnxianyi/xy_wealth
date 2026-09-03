@@ -1,8 +1,7 @@
-// Package weex implements the Weex V3 Spot REST provider.
+// Package weex implements the Weex V3 Spot and Contract REST provider.
 //
-// Spot and Contract use different upstream domains. The Spot capability is
-// implemented here first; Contract methods will be added without coupling the
-// two API surfaces together.
+// Spot and Contract use different upstream domains. Their capabilities stay
+// separate so changes to one API surface cannot accidentally target the other.
 package weex
 
 import (

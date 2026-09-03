@@ -656,6 +656,38 @@ paths:
           $ref: "#/components/responses/EndpointNotSupported"
         "502":
           $ref: "#/components/responses/UpstreamError"
+  /api/v1/exchanges/{provider}/futures/usdm/positions:
+    get:
+      tags: [WeexContract]
+      operationId: getWeexContractPositions
+      summary: 获取 Weex Contract 持仓
+      parameters:
+        - $ref: "#/components/parameters/WeexProvider"
+        - name: symbol
+          in: query
+          required: false
+          description: 交易对；不传则返回全部持仓
+          schema:
+            type: string
+            examples: [BTCUSDT]
+      responses:
+        "200":
+          description: Weex Contract 持仓列表
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/RequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContractPositions"
+        "400":
+          $ref: "#/components/responses/InvalidParameter"
+        "404":
+          $ref: "#/components/responses/ProviderNotFound"
+        "501":
+          $ref: "#/components/responses/EndpointNotSupported"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/coinm/ping:
     get:
       tags: [BinanceCoinM]
@@ -980,6 +1012,14 @@ components:
       schema:
         type: string
         enum: [binance, weex]
+    WeexProvider:
+      name: provider
+      in: path
+      required: true
+      description: Weex 交易所标识
+      schema:
+        type: string
+        enum: [weex]
     Symbol:
       name: symbol
       in: query
@@ -2081,6 +2121,92 @@ components:
           format: int64
         collect_cycle:
           type: integer
+    ContractPositions:
+      type: object
+      additionalProperties: false
+      required: [provider, positions]
+      properties:
+        provider:
+          type: string
+          examples: [weex]
+        positions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContractPosition"
+    ContractPosition:
+      type: object
+      additionalProperties: false
+      required: [id, asset, symbol, side, margin_type, separated_mode, leverage, size]
+      properties:
+        id:
+          type: integer
+          format: int64
+        asset:
+          type: string
+          examples: [USDT]
+        symbol:
+          type: string
+          examples: [BTCUSDT]
+        side:
+          type: string
+          enum: [LONG, SHORT]
+        margin_type:
+          type: string
+          enum: [CROSSED, ISOLATED]
+        separated_mode:
+          type: string
+          enum: [COMBINED, SEPARATED]
+        separated_open_order_id:
+          type: integer
+          format: int64
+        leverage:
+          $ref: "#/components/schemas/DecimalString"
+        size:
+          $ref: "#/components/schemas/DecimalString"
+        open_value:
+          $ref: "#/components/schemas/DecimalString"
+        open_fee:
+          $ref: "#/components/schemas/DecimalString"
+        funding_fee:
+          $ref: "#/components/schemas/DecimalString"
+        margin_size:
+          $ref: "#/components/schemas/DecimalString"
+        isolated_margin:
+          $ref: "#/components/schemas/DecimalString"
+        is_auto_append_isolated_margin:
+          type: boolean
+        cum_open_size:
+          $ref: "#/components/schemas/DecimalString"
+        cum_open_value:
+          $ref: "#/components/schemas/DecimalString"
+        cum_open_fee:
+          $ref: "#/components/schemas/DecimalString"
+        cum_close_size:
+          $ref: "#/components/schemas/DecimalString"
+        cum_close_value:
+          $ref: "#/components/schemas/DecimalString"
+        cum_close_fee:
+          $ref: "#/components/schemas/DecimalString"
+        cum_funding_fee:
+          $ref: "#/components/schemas/DecimalString"
+        cum_liquidate_fee:
+          $ref: "#/components/schemas/DecimalString"
+        created_match_sequence_id:
+          type: integer
+          format: int64
+        updated_match_sequence_id:
+          type: integer
+          format: int64
+        created_time:
+          type: integer
+          format: int64
+        updated_time:
+          type: integer
+          format: int64
+        unrealize_pnl:
+          $ref: "#/components/schemas/DecimalString"
+        liquidate_price:
+          $ref: "#/components/schemas/DecimalString"
     ExchangeBalances:
       type: object
       additionalProperties: false
