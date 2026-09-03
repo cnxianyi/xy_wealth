@@ -156,7 +156,7 @@ Weex 公共 Spot/Contract 接口不需要密钥；账户余额查询需要配置
 | GET | `/api/v1/summary/banks` | 所有银行聚合结果（当前为空） |
 | GET | `/api/v1/summary` | 所有分类的统一聚合结果 |
 
-金额始终以十进制字符串返回，避免 JSON 浮点数造成精度损失。聚合接口允许部分成功：每个 provider 都有独立的 `status` 和可选 `error`。
+金额始终以十进制字符串返回，避免 JSON 浮点数造成精度损失。聚合接口允许部分成功：每个 provider 及其已实现的产品（`usdm`、`usdcm`、`coinm`、`contract`）都有独立的 `status` 和可选 `error`；Spot 余额保留在 provider 的 `balances` 字段，产品账户数据位于 `products`。
 
 当前 Binance Spot 首期只读基础接口已接入：连通性、服务器时间、交易规则、订单簿、K 线和行情。下单、撤单、订单查询、账户流水及用户数据流属于后续阶段，暂未开放。
 

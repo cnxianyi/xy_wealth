@@ -1400,7 +1400,7 @@ paths:
       tags: [Summary]
       operationId: getFullSummary
       summary: 获取全部资产来源的聚合结果
-      description: Provider 之间并发查询，单个来源失败不会导致整个请求失败。
+      description: Provider 之间并发查询，并按 Spot、USDⓈ-M、USDC-M、COIN-M 或 Contract 产品独立返回账户数据；单个来源或产品失败不会导致整个请求失败。
       responses:
         "200":
           description: 完整聚合快照
@@ -1415,7 +1415,7 @@ paths:
     get:
       tags: [Summary]
       operationId: getExchangeSummary
-      summary: 获取所有交易所的聚合结果
+      summary: 获取所有交易所及产品的聚合结果
       responses:
         "200":
           description: 交易所聚合快照
@@ -2835,6 +2835,41 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AssetBalance"
+        products:
+          type: array
+          description: 已实现的合约账户产品；未实现的产品不会出现在列表中
+          items:
+            $ref: "#/components/schemas/ExchangeProductResult"
+        error:
+          type: string
+    ExchangeProductResult:
+      type: object
+      additionalProperties: false
+      required: [product, status]
+      properties:
+        product:
+          type: string
+          enum: [usdm, usdcm, coinm, contract]
+          description: 账户产品标识
+          examples: [usdm]
+        status:
+          $ref: "#/components/schemas/ProviderStatus"
+        futures_balances:
+          type: array
+          items:
+            $ref: "#/components/schemas/FuturesAccountBalance"
+        futures_positions:
+          type: array
+          items:
+            $ref: "#/components/schemas/FuturesPosition"
+        contract_balances:
+          type: array
+          items:
+            $ref: "#/components/schemas/AssetBalance"
+        contract_positions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContractPosition"
         error:
           type: string
     BankAccount:
@@ -2866,7 +2901,7 @@ components:
           type: string
     ProviderStatus:
       type: string
-      enum: [ok, error]
+      enum: [ok, partial, error]
     ExchangeSummary:
       type: object
       additionalProperties: false
