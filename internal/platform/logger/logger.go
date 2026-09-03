@@ -3,7 +3,7 @@ package logger
 import (
 	"fmt"
 
-	"github.com/xy-wealth/xy-wealth/internal/config"
+	"github.com/cnxianyi/xy_wealth/internal/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

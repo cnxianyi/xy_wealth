@@ -5,9 +5,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/xy-wealth/xy-wealth/internal/domain/asset"
-	"github.com/xy-wealth/xy-wealth/internal/modules/bank"
-	"github.com/xy-wealth/xy-wealth/internal/modules/exchange"
+	"github.com/cnxianyi/xy_wealth/internal/domain/asset"
+	"github.com/cnxianyi/xy_wealth/internal/modules/bank"
+	"github.com/cnxianyi/xy_wealth/internal/modules/exchange"
 )
 
 type Service struct {

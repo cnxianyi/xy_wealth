@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/xy-wealth/xy-wealth/internal/config"
+	"github.com/cnxianyi/xy_wealth/internal/config"
 	"go.uber.org/zap"
 )
 

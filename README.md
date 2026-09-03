@@ -2,7 +2,7 @@
 
 面向多数据源的资产聚合服务。当前接入 Binance Spot 账户资产，HTTP API 由 Gin 统一暴露；PostgreSQL 使用原生 `database/sql`，Redis 用于后续缓存、锁和任务状态，不引入 ORM。
 
-当前 Go module 使用占位路径 `github.com/xy-wealth/xy-wealth`。创建正式 GitHub 仓库后，请将它替换为真实的仓库路径（`go mod edit -module=...`，并同步更新项目内 import）。
+Go module 对应正式仓库：`github.com/cnxianyi/xy_wealth`。
 
 ## 目录
 

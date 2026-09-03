@@ -3,8 +3,8 @@ package handler
 import (
 	"net/http"
 
+	"github.com/cnxianyi/xy_wealth/internal/modules/exchange"
 	"github.com/gin-gonic/gin"
-	"github.com/xy-wealth/xy-wealth/internal/modules/exchange"
 	"go.uber.org/zap"
 )
 

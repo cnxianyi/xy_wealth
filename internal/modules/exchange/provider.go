@@ -3,7 +3,7 @@ package exchange
 import (
 	"context"
 
-	"github.com/xy-wealth/xy-wealth/internal/domain/asset"
+	"github.com/cnxianyi/xy_wealth/internal/domain/asset"
 )
 
 // Provider is the stable boundary implemented by every exchange integration.

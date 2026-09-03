@@ -8,9 +8,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/xy-wealth/xy-wealth/internal/app"
-	"github.com/xy-wealth/xy-wealth/internal/config"
-	"github.com/xy-wealth/xy-wealth/internal/platform/logger"
+	"github.com/cnxianyi/xy_wealth/internal/app"
+	"github.com/cnxianyi/xy_wealth/internal/config"
+	"github.com/cnxianyi/xy_wealth/internal/platform/logger"
 	"go.uber.org/zap"
 )
 

@@ -3,8 +3,8 @@ package handler
 import (
 	"net/http"
 
+	"github.com/cnxianyi/xy_wealth/internal/modules/summary"
 	"github.com/gin-gonic/gin"
-	"github.com/xy-wealth/xy-wealth/internal/modules/summary"
 )
 
 type Summary struct {

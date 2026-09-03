@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/xy-wealth/xy-wealth/internal/config"
+	"github.com/cnxianyi/xy_wealth/internal/config"
 )
 
 func TestClientBalances(t *testing.T) {

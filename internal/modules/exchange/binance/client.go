@@ -15,9 +15,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cnxianyi/xy_wealth/internal/config"
+	"github.com/cnxianyi/xy_wealth/internal/domain/asset"
 	"github.com/shopspring/decimal"
-	"github.com/xy-wealth/xy-wealth/internal/config"
-	"github.com/xy-wealth/xy-wealth/internal/domain/asset"
 )
 
 const maxResponseBytes = 2 << 20

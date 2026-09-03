@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/cnxianyi/xy_wealth/internal/config"
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/xy-wealth/xy-wealth/internal/config"
 )
 
 func OpenPostgres(ctx context.Context, cfg config.PostgresConfig) (*sql.DB, error) {

@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/xy-wealth/xy-wealth/internal/config"
-	"github.com/xy-wealth/xy-wealth/internal/modules/bank"
-	"github.com/xy-wealth/xy-wealth/internal/modules/exchange"
-	"github.com/xy-wealth/xy-wealth/internal/modules/exchange/binance"
-	"github.com/xy-wealth/xy-wealth/internal/modules/summary"
-	"github.com/xy-wealth/xy-wealth/internal/platform/database"
-	httptransport "github.com/xy-wealth/xy-wealth/internal/transport/http"
+	"github.com/cnxianyi/xy_wealth/internal/config"
+	"github.com/cnxianyi/xy_wealth/internal/modules/bank"
+	"github.com/cnxianyi/xy_wealth/internal/modules/exchange"
+	"github.com/cnxianyi/xy_wealth/internal/modules/exchange/binance"
+	"github.com/cnxianyi/xy_wealth/internal/modules/summary"
+	"github.com/cnxianyi/xy_wealth/internal/platform/database"
+	httptransport "github.com/cnxianyi/xy_wealth/internal/transport/http"
 	"go.uber.org/zap"
 )
 

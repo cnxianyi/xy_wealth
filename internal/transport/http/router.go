@@ -3,13 +3,13 @@ package httptransport
 import (
 	"database/sql"
 
+	"github.com/cnxianyi/xy_wealth/internal/config"
+	"github.com/cnxianyi/xy_wealth/internal/modules/exchange"
+	"github.com/cnxianyi/xy_wealth/internal/modules/summary"
+	"github.com/cnxianyi/xy_wealth/internal/transport/http/handler"
+	appmiddleware "github.com/cnxianyi/xy_wealth/internal/transport/http/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
-	"github.com/xy-wealth/xy-wealth/internal/config"
-	"github.com/xy-wealth/xy-wealth/internal/modules/exchange"
-	"github.com/xy-wealth/xy-wealth/internal/modules/summary"
-	"github.com/xy-wealth/xy-wealth/internal/transport/http/handler"
-	appmiddleware "github.com/xy-wealth/xy-wealth/internal/transport/http/middleware"
 	"go.uber.org/zap"
 )
 

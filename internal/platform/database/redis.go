@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/cnxianyi/xy_wealth/internal/config"
 	"github.com/redis/go-redis/v9"
-	"github.com/xy-wealth/xy-wealth/internal/config"
 )
 
 func OpenRedis(ctx context.Context, cfg config.RedisConfig) (*redis.Client, error) {

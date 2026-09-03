@@ -1,4 +1,4 @@
-module github.com/xy-wealth/xy-wealth
+module github.com/cnxianyi/xy_wealth
 
 go 1.25.0
 
