@@ -37,4 +37,10 @@ func TestLoadDefaultsAndEnvironmentOverrides(t *testing.T) {
 	if cfg.Binance.CoinMFuturesBaseURL != "https://dapi.binance.com" {
 		t.Fatalf("COIN-M Futures base URL = %q, want https://dapi.binance.com", cfg.Binance.CoinMFuturesBaseURL)
 	}
+	if cfg.Weex.SpotBaseURL != "https://api-spot.weex.com" {
+		t.Fatalf("Weex Spot base URL = %q, want https://api-spot.weex.com", cfg.Weex.SpotBaseURL)
+	}
+	if cfg.Weex.ContractBaseURL != "https://api-contract.weex.com" {
+		t.Fatalf("Weex Contract base URL = %q, want https://api-contract.weex.com", cfg.Weex.ContractBaseURL)
+	}
 }

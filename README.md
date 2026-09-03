@@ -15,6 +15,7 @@ internal/config/                   Viper 配置加载和校验
 internal/domain/                   跨模块核心数据类型
 internal/modules/exchange/         交易所稳定接口
 internal/modules/exchange/binance/ Binance API 适配器
+internal/modules/exchange/weex/    Weex API 适配器（初始化阶段）
 internal/modules/bank/             银行接口扩展点
 internal/modules/summary/          跨数据源并发聚合
 internal/platform/                 PostgreSQL、Redis、Zap 等基础设施
@@ -42,6 +43,8 @@ Binance 账户接口需要只读 API Key。请启用读取权限、配置 IP 白
 Binance USDⓈ-M Futures 使用 `binance.futures_base_url`（默认 `https://fapi.binance.com`），与 Spot 的 `binance.base_url` 相互独立。
 
 Binance COIN-M Futures 使用 `binance.coin_m_futures_base_url`（默认 `https://dapi.binance.com`），与 USDⓈ-M Futures 相互独立。
+
+Weex V3 使用独立的 Spot 与 Contract REST 域名：`weex.spot_base_url`（默认 `https://api-spot.weex.com`）和 `weex.contract_base_url`（默认 `https://api-contract.weex.com`）。当前仅完成 provider 初始化，具体接口将在后续阶段接入。
 
 ## HTTP API
 
@@ -90,7 +93,7 @@ Binance COIN-M Futures 使用 `binance.coin_m_futures_base_url`（默认 `https:
 
 当前 COIN-M Futures 同样只开放只读基础行情接口；合约下单、持仓、保证金、账户资产和用户数据流属于后续阶段。
 
-`/docs` 使用固定版本的 Scalar API Reference 渲染 `/openapi.yaml`，浏览器需要能够访问 jsDelivr CDN。文档侧边栏按嵌套标签组织为 `Exchanges → Binance → Spot / USDⓈ-M Futures / COIN-M Futures`，并预留 `Bitget` 节点。OpenAPI 规范和文档页面作为 Go embed 资源编入服务二进制，部署时无需额外挂载文件。
+`/docs` 使用固定版本的 Scalar API Reference 渲染 `/openapi.yaml`，浏览器需要能够访问 jsDelivr CDN。文档侧边栏按嵌套标签组织为 `Exchanges → Binance → Spot / USDⓈ-M Futures / COIN-M Futures`，并预留 `Bitget` 与 `Weex` 节点。OpenAPI 规范和文档页面作为 Go embed 资源编入服务二进制，部署时无需额外挂载文件。
 
 ## 常用命令
 

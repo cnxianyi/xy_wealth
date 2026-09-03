@@ -38,3 +38,11 @@ binance:
   recv_window: 5000
   http_timeout: 10s
   include_zero: false
+
+weex:
+  spot_base_url: "https://api-spot.weex.com"
+  contract_base_url: "https://api-contract.weex.com"
+  api_key: ""
+  secret_key: ""
+  passphrase: ""
+  http_timeout: 10s

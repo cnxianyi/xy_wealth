@@ -39,6 +39,10 @@ tags:
     x-displayName: Bitget
     parent: Exchanges
     description: 预留 Bitget 交易所接口
+  - name: Weex
+    x-displayName: Weex
+    parent: Exchanges
+    description: Weex provider 初始化中，接口待接入
   - name: Summary
     description: 跨数据源聚合结果
 paths:
