@@ -1,9 +1,11 @@
-// Package bitget implements Bitget's classic V2 Spot REST provider.
+// Package bitget implements Bitget's Spot and futures REST provider.
 //
 // Bitget uses a response envelope for both public and private endpoints. The
 // client unwraps that envelope here so handlers only deal with normalized
-// exchange models. Futures capabilities are implemented in the dedicated
-// contract and coinm files.
+// exchange models. Account methods use Classic V2 endpoints when available
+// and automatically fall back to the Unified Account (UTA) V3 endpoints when
+// Bitget reports error 40085. Futures capabilities are implemented in the
+// dedicated contract and coinm files.
 package bitget
 
 import (
@@ -35,6 +37,7 @@ const (
 	defaultKlinesLimit     = 100
 	maxKlinesLimit         = 1000
 	bitgetSpotPathPrefix   = "/api/v2"
+	bitgetUTAPathPrefix    = "/api/v3"
 	bitgetSuccessCode      = "00000"
 	accessKeyHeader        = "ACCESS-KEY"
 	accessSignHeader       = "ACCESS-SIGN"
@@ -51,9 +54,10 @@ var (
 	}
 )
 
-// Client is a Bitget Classic V2 client. Spot and Mix (futures) endpoints share
-// the configured REST domain while each capability keeps its own paths and
-// normalization logic.
+// Client is a Bitget REST client. Spot and Mix (futures) market endpoints use
+// the configured REST domain; account methods additionally support Bitget's
+// Unified Account V3 paths while each capability keeps its own normalization
+// logic.
 type Client struct {
 	baseURL     string
 	apiKey      string
@@ -431,6 +435,9 @@ func (c *Client) Balances(ctx context.Context) ([]asset.Balance, error) {
 	query := url.Values{"assetType": []string{"all"}}
 	var response []accountAssetResponse
 	if err := c.getSignedJSON(ctx, "/spot/account/assets", query, &response); err != nil {
+		if isUnifiedAccountError(err) {
+			return c.utaSpotBalances(ctx)
+		}
 		return nil, err
 	}
 	balances := make([]asset.Balance, 0, len(response))
@@ -490,8 +497,19 @@ func (c *Client) getSignedJSON(ctx context.Context, path string, query url.Value
 	return c.doJSON(ctx, http.MethodGet, path, query, true, out)
 }
 
+func (c *Client) getSignedV3JSON(ctx context.Context, path string, query url.Values, out any) error {
+	if c.apiKey == "" || c.secretKey == "" || c.passphrase == "" {
+		return ErrCredentialsMissing
+	}
+	return c.doJSONWithPrefix(ctx, http.MethodGet, path, query, true, out, bitgetUTAPathPrefix)
+}
+
 func (c *Client) doJSON(ctx context.Context, method, path string, query url.Values, signed bool, out any) error {
-	requestURL, err := url.Parse(strings.TrimRight(c.baseURL, "/") + bitgetSpotPathPrefix + path)
+	return c.doJSONWithPrefix(ctx, method, path, query, signed, out, bitgetSpotPathPrefix)
+}
+
+func (c *Client) doJSONWithPrefix(ctx context.Context, method, path string, query url.Values, signed bool, out any, pathPrefix string) error {
+	requestURL, err := url.Parse(strings.TrimRight(c.baseURL, "/") + pathPrefix + path)
 	if err != nil {
 		return fmt.Errorf("create Bitget request URL: %w", err)
 	}
@@ -511,7 +529,7 @@ func (c *Client) doJSON(ctx context.Context, method, path string, query url.Valu
 		if rawQuery != "" {
 			queryString = "?" + rawQuery
 		}
-		payload := timestamp + strings.ToUpper(method) + bitgetSpotPathPrefix + path + queryString
+		payload := timestamp + strings.ToUpper(method) + pathPrefix + path + queryString
 		req.Header.Set(accessKeyHeader, c.apiKey)
 		req.Header.Set(accessSignHeader, sign(payload, c.secretKey))
 		req.Header.Set(accessTimestampHeader, timestamp)
@@ -568,6 +586,11 @@ func newAPIError(status int, body []byte) error {
 		message = response.Message
 	}
 	return &APIError{HTTPStatus: status, Code: code, Message: message}
+}
+
+func isUnifiedAccountError(err error) bool {
+	var apiErr *APIError
+	return errors.As(err, &apiErr) && apiErr.Code == "40085"
 }
 
 func sign(payload, secret string) string {

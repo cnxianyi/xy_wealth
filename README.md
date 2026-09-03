@@ -45,7 +45,7 @@ Binance USDⓈ-M Futures 使用 `binance.futures_base_url`（默认 `https://fap
 
 Binance COIN-M Futures 使用 `binance.coin_m_futures_base_url`（默认 `https://dapi.binance.com`），与 USDⓈ-M Futures 相互独立。
 
-Bitget Classic V2 Spot 和 Mix 使用 `bitget.base_url`（默认 `https://api.bitget.com`）。公共行情接口无需密钥；账户余额和持仓查询需要配置 API Key、Secret Key 和 Passphrase。USDC-FUTURES 合约符号按 Bitget 格式使用，例如 `BTCPERP`。
+Bitget Spot 和 Mix 使用 `bitget.base_url`（默认 `https://api.bitget.com`）。公共行情接口无需密钥；账户余额和持仓查询需要配置 API Key、Secret Key 和 Passphrase。账户接口会自动兼容 Classic Account 与 Unified Account（UTA）：当 Classic API 返回 `40085` 时，余额切换到 UTA `/api/v3/account/assets`，持仓切换到 UTA `/api/v3/position/current-position`。USDC-FUTURES 合约符号按 Bitget 格式使用，例如 `BTCPERP`。
 
 Weex V3 使用独立的 Spot 与 Contract REST 域名：`weex.spot_base_url`（默认 `https://api-spot.weex.com`）和 `weex.contract_base_url`（默认 `https://api-contract.weex.com`）。当前已接入 Spot 与 Contract 基础只读接口、Spot 账户余额查询，以及需要签名的 Contract 账户余额和持仓查询。
 

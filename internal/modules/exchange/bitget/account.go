@@ -52,6 +52,9 @@ func (c *Client) futuresAccountBalances(ctx context.Context, productType string)
 	query := url.Values{"productType": []string{productType}}
 	var response []futuresAccountResponse
 	if err := c.getSignedJSON(ctx, "/mix/account/accounts", query, &response); err != nil {
+		if isUnifiedAccountError(err) {
+			return c.utaFuturesAccountBalances(ctx)
+		}
 		return nil, err
 	}
 	balances := make([]exchange.FuturesAccountBalance, 0, len(response))
@@ -98,6 +101,9 @@ func (c *Client) futuresPositions(ctx context.Context, symbol, productType, marg
 	}
 	var response []futuresPositionResponse
 	if err := c.getSignedJSON(ctx, path, query, &response); err != nil {
+		if isUnifiedAccountError(err) {
+			return c.utaFuturesPositions(ctx, productType, normalized)
+		}
 		return nil, err
 	}
 	positions := make([]exchange.FuturesPosition, 0, len(response))
