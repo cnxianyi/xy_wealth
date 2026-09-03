@@ -528,6 +528,17 @@ func (c *Client) getJSON(ctx context.Context, path string, query url.Values, out
 	return c.doJSON(ctx, c.spotBaseURL, http.MethodGet, path, query, false, out)
 }
 
+func (c *Client) getContractJSON(ctx context.Context, path string, query url.Values, out any) error {
+	return c.doJSON(ctx, c.contractBaseURL, http.MethodGet, path, query, false, out)
+}
+
+func (c *Client) getSignedContractJSON(ctx context.Context, path string, query url.Values, out any) error {
+	if c.apiKey == "" || c.secretKey == "" || c.passphrase == "" {
+		return ErrCredentialsMissing
+	}
+	return c.doJSON(ctx, c.contractBaseURL, http.MethodGet, path, query, true, out)
+}
+
 func (c *Client) doJSON(ctx context.Context, baseURL, method, path string, query url.Values, signed bool, out any) error {
 	requestURL, err := url.Parse(strings.TrimRight(baseURL, "/") + path)
 	if err != nil {

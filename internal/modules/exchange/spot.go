@@ -147,6 +147,7 @@ type Ticker24hr struct {
 type PriceTicker struct {
 	Symbol string `json:"symbol"`
 	Price  string `json:"price"`
+	Time   int64  `json:"time,omitempty"`
 }
 
 type BookTicker struct {
@@ -155,4 +156,5 @@ type BookTicker struct {
 	BidQty   string `json:"bid_qty"`
 	AskPrice string `json:"ask_price"`
 	AskQty   string `json:"ask_qty"`
+	Time     int64  `json:"time,omitempty"`
 }

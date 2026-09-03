@@ -1,6 +1,6 @@
 # xy-wealth
 
-面向多数据源的资产聚合服务。当前接入 Binance Spot、USDⓈ-M Futures、COIN-M Futures 和 Weex Spot 基础只读接口，HTTP API 由 Gin 统一暴露；PostgreSQL 使用原生 `database/sql`，Redis 用于后续缓存、锁和任务状态，不引入 ORM。
+面向多数据源的资产聚合服务。当前接入 Binance Spot、USDⓈ-M Futures、COIN-M Futures、Weex Spot 和 Weex Contract 基础只读接口，HTTP API 由 Gin 统一暴露；PostgreSQL 使用原生 `database/sql`，Redis 用于后续缓存、锁和任务状态，不引入 ORM。
 
 Go module 对应正式仓库：`github.com/cnxianyi/xy_wealth`。
 
@@ -44,9 +44,9 @@ Binance USDⓈ-M Futures 使用 `binance.futures_base_url`（默认 `https://fap
 
 Binance COIN-M Futures 使用 `binance.coin_m_futures_base_url`（默认 `https://dapi.binance.com`），与 USDⓈ-M Futures 相互独立。
 
-Weex V3 使用独立的 Spot 与 Contract REST 域名：`weex.spot_base_url`（默认 `https://api-spot.weex.com`）和 `weex.contract_base_url`（默认 `https://api-contract.weex.com`）。当前已接入 Spot 基础只读接口及账户余额查询；Contract 接口将在后续阶段接入。
+Weex V3 使用独立的 Spot 与 Contract REST 域名：`weex.spot_base_url`（默认 `https://api-spot.weex.com`）和 `weex.contract_base_url`（默认 `https://api-contract.weex.com`）。当前已接入 Spot 与 Contract 基础只读接口，以及 Spot 账户余额查询。
 
-Weex 公共 Spot 接口不需要密钥；账户余额查询需要配置 API Key、Secret Key 和 Passphrase，并通过签名请求访问。
+Weex 公共 Spot/Contract 接口不需要密钥；账户余额查询需要配置 API Key、Secret Key 和 Passphrase，并通过签名请求访问。
 
 ## HTTP API
 
@@ -74,6 +74,15 @@ Weex 公共 Spot 接口不需要密钥；账户余额查询需要配置 API Key�
 | GET | `/api/v1/exchanges/weex/spot/ticker/24hr?symbol=BTCUSDT` | Weex Spot 24 小时行情 |
 | GET | `/api/v1/exchanges/weex/spot/ticker/price?symbol=BTCUSDT` | Weex Spot 最新价格 |
 | GET | `/api/v1/exchanges/weex/spot/ticker/book?symbol=BTCUSDT` | Weex Spot 最优买卖价 |
+| GET | `/api/v1/exchanges/weex/futures/usdm/ping` | Weex Contract 连通性检查 |
+| GET | `/api/v1/exchanges/weex/futures/usdm/time` | Weex Contract 服务器时间 |
+| GET | `/api/v1/exchanges/weex/futures/usdm/exchange-info` | Weex Contract 交易规则 |
+| GET | `/api/v1/exchanges/weex/futures/usdm/depth?symbol=BTCUSDT` | Weex Contract 订单簿 |
+| GET | `/api/v1/exchanges/weex/futures/usdm/klines?symbol=BTCUSDT&interval=1m` | Weex Contract K 线 |
+| GET | `/api/v1/exchanges/weex/futures/usdm/ticker/24hr?symbol=BTCUSDT` | Weex Contract 24 小时行情 |
+| GET | `/api/v1/exchanges/weex/futures/usdm/ticker/price?symbol=BTCUSDT` | Weex Contract 指数价格 |
+| GET | `/api/v1/exchanges/weex/futures/usdm/ticker/book?symbol=BTCUSDT` | Weex Contract 最优买卖价 |
+| GET | `/api/v1/exchanges/weex/futures/usdm/premium-index?symbol=BTCUSDT` | Weex Contract 标记价格和资金费率 |
 | GET | `/api/v1/exchanges/binance/futures/usdm/ping` | USDⓈ-M Futures 连通性检查 |
 | GET | `/api/v1/exchanges/binance/futures/usdm/time` | USDⓈ-M Futures 服务器时间 |
 | GET | `/api/v1/exchanges/binance/futures/usdm/exchange-info` | USDⓈ-M Futures 交易规则 |
@@ -104,9 +113,9 @@ Weex 公共 Spot 接口不需要密钥；账户余额查询需要配置 API Key�
 
 当前 COIN-M Futures 同样只开放只读基础行情接口；合约下单、持仓、保证金、账户资产和用户数据流属于后续阶段。
 
-当前 Weex Spot 开放连通性、服务器时间、交易规则、订单簿、K 线、行情和账户余额查询；Spot 交易写操作及 Contract 接口属于后续阶段。Weex 与 Binance 共用 `/api/v1/exchanges/{provider}/spot/...` 路由，将 `provider` 设置为 `weex` 即可访问。
+当前 Weex Spot 开放连通性、服务器时间、交易规则、订单簿、K 线、行情和账户余额查询；Weex Contract 开放对应的只读合约行情接口。Spot/Contract 交易写操作属于后续阶段，分别使用 `/api/v1/exchanges/{provider}/spot/...` 和 `/api/v1/exchanges/{provider}/futures/usdm/...` 路由。
 
-`/docs` 使用固定版本的 Scalar API Reference 渲染 `/openapi.yaml`，浏览器需要能够访问 jsDelivr CDN。文档侧边栏按嵌套标签组织为 `Exchanges → Binance → Spot / USDⓈ-M Futures / COIN-M Futures` 与 `Exchanges → Weex → Spot`，并预留 `Bitget` 节点。OpenAPI 规范和文档页面作为 Go embed 资源编入服务二进制，部署时无需额外挂载文件。
+`/docs` 使用固定版本的 Scalar API Reference 渲染 `/openapi.yaml`，浏览器需要能够访问 jsDelivr CDN。文档侧边栏按嵌套标签组织为 `Exchanges → Binance → Spot / USDⓈ-M Futures / COIN-M Futures` 与 `Exchanges → Weex → Spot / Contract`，并预留 `Bitget` 节点。OpenAPI 规范和文档页面作为 Go embed 资源编入服务二进制，部署时无需额外挂载文件。
 
 ## 常用命令
 

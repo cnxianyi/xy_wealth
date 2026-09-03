@@ -2,7 +2,8 @@ package exchange
 
 import "context"
 
-// USDSMFuturesProvider is the public, read-only USDⓈ-M Futures REST surface.
+// USDSMFuturesProvider is the public, read-only USDⓈ-M Futures / compatible
+// Contract REST surface.
 // Trading, account and listen-key operations are separate capabilities and
 // are intentionally not part of this initial integration.
 type USDSMFuturesProvider interface {
@@ -92,6 +93,7 @@ type USDSMFuturesSymbolInfo struct {
 	Symbol                string           `json:"symbol"`
 	Pair                  string           `json:"pair"`
 	ContractType          string           `json:"contract_type"`
+	DisplaySymbol         string           `json:"display_symbol,omitempty"`
 	DeliveryDate          int64            `json:"delivery_date"`
 	OnboardDate           int64            `json:"onboard_date"`
 	Status                string           `json:"status"`
@@ -106,6 +108,21 @@ type USDSMFuturesSymbolInfo struct {
 	QuotePrecision        int              `json:"quote_precision"`
 	UnderlyingType        string           `json:"underlying_type,omitempty"`
 	UnderlyingSubType     []string         `json:"underlying_sub_type,omitempty"`
+	ContractVal           string           `json:"contract_val,omitempty"`
+	Delivery              []string         `json:"delivery,omitempty"`
+	ForwardContractFlag   bool             `json:"forward_contract_flag,omitempty"`
+	MinLeverage           int              `json:"min_leverage,omitempty"`
+	MaxLeverage           int              `json:"max_leverage,omitempty"`
+	BuyLimitPriceRatio    string           `json:"buy_limit_price_ratio,omitempty"`
+	SellLimitPriceRatio   string           `json:"sell_limit_price_ratio,omitempty"`
+	MakerFeeRate          string           `json:"maker_fee_rate,omitempty"`
+	TakerFeeRate          string           `json:"taker_fee_rate,omitempty"`
+	APIMakerFeeRate       string           `json:"api_maker_fee_rate,omitempty"`
+	APITakerFeeRate       string           `json:"api_taker_fee_rate,omitempty"`
+	MinOrderSize          string           `json:"min_order_size,omitempty"`
+	MaxOrderSize          string           `json:"max_order_size,omitempty"`
+	MaxPositionSize       string           `json:"max_position_size,omitempty"`
+	MarketOpenLimitSize   string           `json:"market_open_limit_size,omitempty"`
 	SettlePlan            int              `json:"settle_plan,omitempty"`
 	TriggerProtect        string           `json:"trigger_protect,omitempty"`
 	LiquidationFee        string           `json:"liquidation_fee,omitempty"`
@@ -131,20 +148,22 @@ type FuturesTicker24hr struct {
 	Symbol             string `json:"symbol"`
 	PriceChange        string `json:"price_change"`
 	PriceChangePercent string `json:"price_change_percent"`
-	WeightedAvgPrice   string `json:"weighted_avg_price"`
+	WeightedAvgPrice   string `json:"weighted_avg_price,omitempty"`
 	LastPrice          string `json:"last_price"`
-	LastQty            string `json:"last_qty"`
+	LastQty            string `json:"last_qty,omitempty"`
 	OpenPrice          string `json:"open_price"`
 	HighPrice          string `json:"high_price"`
 	LowPrice           string `json:"low_price"`
 	Volume             string `json:"volume"`
 	BaseVolume         string `json:"base_volume,omitempty"`
 	QuoteVolume        string `json:"quote_volume"`
+	MarkPrice          string `json:"mark_price,omitempty"`
+	IndexPrice         string `json:"index_price,omitempty"`
 	OpenTime           int64  `json:"open_time"`
 	CloseTime          int64  `json:"close_time"`
-	FirstID            int64  `json:"first_id"`
-	LastID             int64  `json:"last_id"`
-	Count              int64  `json:"count"`
+	FirstID            int64  `json:"first_id,omitempty"`
+	LastID             int64  `json:"last_id,omitempty"`
+	Count              int64  `json:"count,omitempty"`
 }
 
 type FuturesPremiumIndex struct {
@@ -153,9 +172,11 @@ type FuturesPremiumIndex struct {
 	IndexPrice           string `json:"index_price"`
 	EstimatedSettlePrice string `json:"estimated_settle_price,omitempty"`
 	LastFundingRate      string `json:"last_funding_rate,omitempty"`
+	ForecastFundingRate  string `json:"forecast_funding_rate,omitempty"`
 	InterestRate         string `json:"interest_rate,omitempty"`
 	NextFundingTime      int64  `json:"next_funding_time,omitempty"`
 	Time                 int64  `json:"time"`
+	CollectCycle         int64  `json:"collect_cycle,omitempty"`
 }
 
 type COINMFuturesTicker24hr struct {
