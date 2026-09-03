@@ -39,13 +39,14 @@ var (
 )
 
 type Client struct {
-	baseURL     string
-	apiKey      string
-	secretKey   string
-	recvWindow  int64
-	includeZero bool
-	httpClient  *http.Client
-	now         func() time.Time
+	baseURL        string
+	futuresBaseURL string
+	apiKey         string
+	secretKey      string
+	recvWindow     int64
+	includeZero    bool
+	httpClient     *http.Client
+	now            func() time.Time
 }
 
 type APIError struct {
@@ -163,14 +164,19 @@ func New(cfg config.BinanceConfig) *Client {
 	if recvWindow <= 0 {
 		recvWindow = 5000
 	}
+	futuresBaseURL := cfg.FuturesBaseURL
+	if futuresBaseURL == "" {
+		futuresBaseURL = "https://fapi.binance.com"
+	}
 	return &Client{
-		baseURL:     strings.TrimRight(cfg.BaseURL, "/"),
-		apiKey:      cfg.APIKey,
-		secretKey:   cfg.SecretKey,
-		recvWindow:  recvWindow,
-		includeZero: cfg.IncludeZero,
-		httpClient:  &http.Client{Timeout: timeout},
-		now:         time.Now,
+		baseURL:        strings.TrimRight(cfg.BaseURL, "/"),
+		futuresBaseURL: strings.TrimRight(futuresBaseURL, "/"),
+		apiKey:         cfg.APIKey,
+		secretKey:      cfg.SecretKey,
+		recvWindow:     recvWindow,
+		includeZero:    cfg.IncludeZero,
+		httpClient:     &http.Client{Timeout: timeout},
+		now:            time.Now,
 	}
 }
 
@@ -439,15 +445,19 @@ func (c *Client) getSignedJSON(ctx context.Context, path string, query url.Value
 	payload := query.Encode()
 	query.Set("signature", sign(payload, c.secretKey))
 
-	return c.doJSON(ctx, http.MethodGet, path, query, true, out)
+	return c.doJSON(ctx, c.baseURL, http.MethodGet, path, query, true, out)
 }
 
 func (c *Client) getJSON(ctx context.Context, path string, query url.Values, out any) error {
-	return c.doJSON(ctx, http.MethodGet, path, query, false, out)
+	return c.doJSON(ctx, c.baseURL, http.MethodGet, path, query, false, out)
 }
 
-func (c *Client) doJSON(ctx context.Context, method, path string, query url.Values, signed bool, out any) error {
-	requestURL, err := url.Parse(c.baseURL + path)
+func (c *Client) getFuturesJSON(ctx context.Context, path string, query url.Values, out any) error {
+	return c.doJSON(ctx, c.futuresBaseURL, http.MethodGet, path, query, false, out)
+}
+
+func (c *Client) doJSON(ctx context.Context, baseURL, method, path string, query url.Values, signed bool, out any) error {
+	requestURL, err := url.Parse(baseURL + path)
 	if err != nil {
 		return fmt.Errorf("create binance request URL: %w", err)
 	}

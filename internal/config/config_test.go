@@ -31,4 +31,7 @@ func TestLoadDefaultsAndEnvironmentOverrides(t *testing.T) {
 	if cfg.HTTP.ShutdownTimeout != 10*time.Second {
 		t.Fatalf("shutdown timeout = %s, want 10s", cfg.HTTP.ShutdownTimeout)
 	}
+	if cfg.Binance.FuturesBaseURL != "https://fapi.binance.com" {
+		t.Fatalf("Futures base URL = %q, want https://fapi.binance.com", cfg.Binance.FuturesBaseURL)
+	}
 }

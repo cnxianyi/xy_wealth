@@ -39,6 +39,8 @@ go run ./cmd/server
 
 Binance 账户接口需要只读 API Key。请启用读取权限、配置 IP 白名单，并且不要授予提现权限。未配置密钥时，服务仍可启动，但 Binance 相关响应会标记上游配置错误。
 
+Binance USDⓈ-M Futures 使用 `binance.futures_base_url`（默认 `https://fapi.binance.com`），与 Spot 的 `binance.base_url` 相互独立。
+
 ## HTTP API
 
 | Method | Path | Description |
@@ -56,6 +58,15 @@ Binance 账户接口需要只读 API Key。请启用读取权限、配置 IP 白
 | GET | `/api/v1/exchanges/binance/spot/ticker/24hr?symbol=BTCUSDT` | Binance Spot 24 小时行情 |
 | GET | `/api/v1/exchanges/binance/spot/ticker/price?symbol=BTCUSDT` | Binance Spot 最新价格 |
 | GET | `/api/v1/exchanges/binance/spot/ticker/book?symbol=BTCUSDT` | Binance Spot 最优买卖价 |
+| GET | `/api/v1/exchanges/binance/futures/usdm/ping` | USDⓈ-M Futures 连通性检查 |
+| GET | `/api/v1/exchanges/binance/futures/usdm/time` | USDⓈ-M Futures 服务器时间 |
+| GET | `/api/v1/exchanges/binance/futures/usdm/exchange-info` | USDⓈ-M Futures 交易规则 |
+| GET | `/api/v1/exchanges/binance/futures/usdm/depth?symbol=BTCUSDT` | USDⓈ-M Futures 订单簿 |
+| GET | `/api/v1/exchanges/binance/futures/usdm/klines?symbol=BTCUSDT&interval=1m` | USDⓈ-M Futures K 线 |
+| GET | `/api/v1/exchanges/binance/futures/usdm/ticker/24hr?symbol=BTCUSDT` | USDⓈ-M Futures 24 小时行情 |
+| GET | `/api/v1/exchanges/binance/futures/usdm/ticker/price?symbol=BTCUSDT` | USDⓈ-M Futures 最新价格 |
+| GET | `/api/v1/exchanges/binance/futures/usdm/ticker/book?symbol=BTCUSDT` | USDⓈ-M Futures 最优买卖价 |
+| GET | `/api/v1/exchanges/binance/futures/usdm/premium-index?symbol=BTCUSDT` | 标记价格和资金费率 |
 | GET | `/api/v1/summary/exchanges` | 所有交易所聚合结果 |
 | GET | `/api/v1/summary/banks` | 所有银行聚合结果（当前为空） |
 | GET | `/api/v1/summary` | 所有分类的统一聚合结果 |
@@ -63,6 +74,8 @@ Binance 账户接口需要只读 API Key。请启用读取权限、配置 IP 白
 金额始终以十进制字符串返回，避免 JSON 浮点数造成精度损失。聚合接口允许部分成功：每个 provider 都有独立的 `status` 和可选 `error`。
 
 当前 Binance Spot 首期只读基础接口已接入：连通性、服务器时间、交易规则、订单簿、K 线和行情。下单、撤单、订单查询、账户流水及用户数据流属于后续阶段，暂未开放。
+
+当前 USDⓈ-M Futures 同样只开放只读基础行情接口；合约下单、持仓、保证金、账户资产和用户数据流属于后续阶段。
 
 `/docs` 使用固定版本的 Scalar API Reference 渲染 `/openapi.yaml`，浏览器需要能够访问 jsDelivr CDN。OpenAPI 规范和文档页面作为 Go embed 资源编入服务二进制，部署时无需额外挂载文件。
 

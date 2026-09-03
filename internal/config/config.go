@@ -56,12 +56,13 @@ type RedisConfig struct {
 }
 
 type BinanceConfig struct {
-	BaseURL     string        `mapstructure:"base_url"`
-	APIKey      string        `mapstructure:"api_key"`
-	SecretKey   string        `mapstructure:"secret_key"`
-	RecvWindow  int64         `mapstructure:"recv_window"`
-	HTTPTimeout time.Duration `mapstructure:"http_timeout"`
-	IncludeZero bool          `mapstructure:"include_zero"`
+	BaseURL        string        `mapstructure:"base_url"`
+	FuturesBaseURL string        `mapstructure:"futures_base_url"`
+	APIKey         string        `mapstructure:"api_key"`
+	SecretKey      string        `mapstructure:"secret_key"`
+	RecvWindow     int64         `mapstructure:"recv_window"`
+	HTTPTimeout    time.Duration `mapstructure:"http_timeout"`
+	IncludeZero    bool          `mapstructure:"include_zero"`
 }
 
 func Load() (Config, error) {
@@ -130,7 +131,7 @@ var envKeys = []string{
 	"log.level", "log.encoding",
 	"postgres.dsn", "postgres.max_open_conns", "postgres.max_idle_conns", "postgres.conn_max_lifetime", "postgres.conn_max_idle_time",
 	"redis.address", "redis.password", "redis.db", "redis.pool_size", "redis.dial_timeout", "redis.read_timeout", "redis.write_timeout",
-	"binance.base_url", "binance.api_key", "binance.secret_key", "binance.recv_window", "binance.http_timeout", "binance.include_zero",
+	"binance.base_url", "binance.futures_base_url", "binance.api_key", "binance.secret_key", "binance.recv_window", "binance.http_timeout", "binance.include_zero",
 }
 
 func setDefaults(v *viper.Viper) {
@@ -155,6 +156,7 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("redis.read_timeout", "3s")
 	v.SetDefault("redis.write_timeout", "3s")
 	v.SetDefault("binance.base_url", "https://api.binance.com")
+	v.SetDefault("binance.futures_base_url", "https://fapi.binance.com")
 	v.SetDefault("binance.recv_window", 5000)
 	v.SetDefault("binance.http_timeout", "10s")
 	v.SetDefault("binance.include_zero", false)

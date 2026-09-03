@@ -12,21 +12,31 @@ import (
 )
 
 type Exchange struct {
-	providers     map[string]exchange.Provider
-	spotProviders map[string]exchange.SpotProvider
-	log           *zap.Logger
+	providers        map[string]exchange.Provider
+	spotProviders    map[string]exchange.SpotProvider
+	futuresProviders map[string]exchange.USDSMFuturesProvider
+	log              *zap.Logger
 }
 
 func NewExchange(providers []exchange.Provider, log *zap.Logger) *Exchange {
 	registered := make(map[string]exchange.Provider, len(providers))
 	spotProviders := make(map[string]exchange.SpotProvider, len(providers))
+	futuresProviders := make(map[string]exchange.USDSMFuturesProvider, len(providers))
 	for _, provider := range providers {
 		registered[provider.Name()] = provider
 		if spotProvider, ok := provider.(exchange.SpotProvider); ok {
 			spotProviders[provider.Name()] = spotProvider
 		}
+		if futuresProvider, ok := provider.(exchange.USDSMFuturesProvider); ok {
+			futuresProviders[provider.Name()] = futuresProvider
+		}
 	}
-	return &Exchange{providers: registered, spotProviders: spotProviders, log: log}
+	return &Exchange{
+		providers:        registered,
+		spotProviders:    spotProviders,
+		futuresProviders: futuresProviders,
+		log:              log,
+	}
 }
 
 func (h *Exchange) Balances(c *gin.Context) {
@@ -180,6 +190,149 @@ func (h *Exchange) BookTicker(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"provider": name, "ticker": ticker})
 }
 
+func (h *Exchange) FuturesPing(c *gin.Context) {
+	name, provider, ok := h.futuresProvider(c)
+	if !ok {
+		return
+	}
+	if err := provider.FuturesPing(c.Request.Context()); err != nil {
+		h.upstreamError(c, name, "ping USDⓈ-M Futures exchange failed", err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"provider": name, "status": "ok"})
+}
+
+func (h *Exchange) FuturesServerTime(c *gin.Context) {
+	name, provider, ok := h.futuresProvider(c)
+	if !ok {
+		return
+	}
+	serverTime, err := provider.FuturesServerTime(c.Request.Context())
+	if err != nil {
+		h.upstreamError(c, name, "get USDⓈ-M Futures server time failed", err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"provider": name, "server_time": serverTime.ServerTime})
+}
+
+func (h *Exchange) FuturesExchangeInfo(c *gin.Context) {
+	name, provider, ok := h.futuresProvider(c)
+	if !ok {
+		return
+	}
+	info, err := provider.FuturesExchangeInfo(c.Request.Context())
+	if err != nil {
+		h.upstreamError(c, name, "get USDⓈ-M Futures exchange information failed", err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"provider": name, "info": info})
+}
+
+func (h *Exchange) FuturesDepth(c *gin.Context) {
+	name, provider, ok := h.futuresProvider(c)
+	if !ok {
+		return
+	}
+	limit, err := parseQueryInt(c, "limit", 0)
+	if err != nil {
+		h.handleSpotError(c, name, "get USDⓈ-M Futures order book failed", err)
+		return
+	}
+	orderBook, err := provider.FuturesDepth(c.Request.Context(), c.Query("symbol"), limit)
+	if err != nil {
+		h.handleSpotError(c, name, "get USDⓈ-M Futures order book failed", err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"provider": name, "order_book": orderBook})
+}
+
+func (h *Exchange) FuturesKlines(c *gin.Context) {
+	name, provider, ok := h.futuresProvider(c)
+	if !ok {
+		return
+	}
+	limit, err := parseQueryInt(c, "limit", 0)
+	if err != nil {
+		h.handleSpotError(c, name, "get USDⓈ-M Futures klines failed", err)
+		return
+	}
+	startTime, err := parseOptionalQueryInt64(c, "startTime")
+	if err != nil {
+		h.handleSpotError(c, name, "get USDⓈ-M Futures klines failed", err)
+		return
+	}
+	endTime, err := parseOptionalQueryInt64(c, "endTime")
+	if err != nil {
+		h.handleSpotError(c, name, "get USDⓈ-M Futures klines failed", err)
+		return
+	}
+	klines, err := provider.FuturesKlines(c.Request.Context(), exchange.KlinesRequest{
+		Symbol:    c.Query("symbol"),
+		Interval:  c.Query("interval"),
+		StartTime: startTime,
+		EndTime:   endTime,
+		TimeZone:  c.Query("timeZone"),
+		Limit:     limit,
+	})
+	if err != nil {
+		h.handleSpotError(c, name, "get USDⓈ-M Futures klines failed", err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"provider": name, "klines": klines})
+}
+
+func (h *Exchange) FuturesTicker24hr(c *gin.Context) {
+	name, provider, ok := h.futuresProvider(c)
+	if !ok {
+		return
+	}
+	ticker, err := provider.FuturesTicker24hr(c.Request.Context(), c.Query("symbol"))
+	if err != nil {
+		h.handleSpotError(c, name, "get USDⓈ-M Futures 24-hour ticker failed", err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"provider": name, "ticker": ticker})
+}
+
+func (h *Exchange) FuturesTickerPrice(c *gin.Context) {
+	name, provider, ok := h.futuresProvider(c)
+	if !ok {
+		return
+	}
+	ticker, err := provider.FuturesTickerPrice(c.Request.Context(), c.Query("symbol"))
+	if err != nil {
+		h.handleSpotError(c, name, "get USDⓈ-M Futures ticker price failed", err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"provider": name, "ticker": ticker})
+}
+
+func (h *Exchange) FuturesBookTicker(c *gin.Context) {
+	name, provider, ok := h.futuresProvider(c)
+	if !ok {
+		return
+	}
+	ticker, err := provider.FuturesBookTicker(c.Request.Context(), c.Query("symbol"))
+	if err != nil {
+		h.handleSpotError(c, name, "get USDⓈ-M Futures book ticker failed", err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"provider": name, "ticker": ticker})
+}
+
+func (h *Exchange) FuturesPremiumIndex(c *gin.Context) {
+	name, provider, ok := h.futuresProvider(c)
+	if !ok {
+		return
+	}
+	premiumIndex, err := provider.FuturesPremiumIndex(c.Request.Context(), c.Query("symbol"))
+	if err != nil {
+		h.handleSpotError(c, name, "get USDⓈ-M Futures premium index failed", err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"provider": name, "premium_index": premiumIndex})
+}
+
 func (h *Exchange) spotProvider(c *gin.Context) (string, exchange.SpotProvider, bool) {
 	name := c.Param("provider")
 	provider, ok := h.spotProviders[name]
@@ -189,6 +342,24 @@ func (h *Exchange) spotProvider(c *gin.Context) (string, exchange.SpotProvider, 
 	if _, registered := h.providers[name]; registered {
 		c.JSON(http.StatusNotImplemented, gin.H{
 			"error": gin.H{"code": "endpoint_not_supported", "message": "spot endpoint is not supported by this provider"},
+		})
+		return "", nil, false
+	}
+	c.JSON(http.StatusNotFound, gin.H{
+		"error": gin.H{"code": "provider_not_found", "message": "exchange provider not found"},
+	})
+	return "", nil, false
+}
+
+func (h *Exchange) futuresProvider(c *gin.Context) (string, exchange.USDSMFuturesProvider, bool) {
+	name := c.Param("provider")
+	provider, ok := h.futuresProviders[name]
+	if ok {
+		return name, provider, true
+	}
+	if _, registered := h.providers[name]; registered {
+		c.JSON(http.StatusNotImplemented, gin.H{
+			"error": gin.H{"code": "endpoint_not_supported", "message": "USDⓈ-M Futures endpoint is not supported by this provider"},
 		})
 		return "", nil, false
 	}
