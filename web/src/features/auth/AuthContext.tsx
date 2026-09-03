@@ -20,6 +20,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const handleUnauthorized = useCallback(() => {
     clearStoredToken();
     setToken(null);
+    setIsCheckingSession(false);
   }, []);
 
   const client = useMemo(

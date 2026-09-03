@@ -39,4 +39,23 @@ describe("App authentication flow", () => {
     await waitFor(() => expect(window.sessionStorage.getItem("xy-wealth.x-token")).toBe("session-token"));
     expect(fetchMock.mock.calls.some(([input]) => String(input).endsWith("/summary?include_zero=false"))).toBe(true);
   });
+
+  it("returns to login when a stored token is no longer valid", async () => {
+    window.history.pushState({}, "", "/");
+    window.sessionStorage.setItem("xy-wealth.x-token", "expired-token");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn<typeof fetch>().mockResolvedValue(
+        new Response(JSON.stringify({ error: { code: "unauthorized", message: "expired" } }), {
+          headers: { "content-type": "application/json" },
+          status: 401,
+        }),
+      ),
+    );
+
+    render(<App />);
+
+    expect(await screen.findByRole("heading", { name: "欢迎回来" })).toBeInTheDocument();
+    expect(window.sessionStorage.getItem("xy-wealth.x-token")).toBeNull();
+  });
 });
