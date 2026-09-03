@@ -8,6 +8,7 @@ Go module 对应正式仓库：`github.com/cnxianyi/xy_wealth`。
 
 ```text
 cmd/server/                         服务入口
+api/                                OpenAPI 3.1 规范与交互式文档
 configs/                           非敏感配置模板
 internal/app/                      依赖组装与应用生命周期
 internal/config/                   Viper 配置加载和校验
@@ -42,6 +43,8 @@ Binance 账户接口需要只读 API Key。请启用读取权限、配置 IP 白
 
 | Method | Path | Description |
 | --- | --- | --- |
+| GET | `/docs` | Scalar API Reference 交互式文档 |
+| GET | `/openapi.yaml` | OpenAPI 3.1.0 原始规范 |
 | GET | `/health/live` | 进程存活检查 |
 | GET | `/health/ready` | PostgreSQL 与 Redis 就绪检查 |
 | GET | `/api/v1/exchanges/binance/balances` | Binance Spot 余额 |
@@ -50,6 +53,8 @@ Binance 账户接口需要只读 API Key。请启用读取权限、配置 IP 白
 | GET | `/api/v1/summary` | 所有分类的统一聚合结果 |
 
 金额始终以十进制字符串返回，避免 JSON 浮点数造成精度损失。聚合接口允许部分成功：每个 provider 都有独立的 `status` 和可选 `error`。
+
+`/docs` 使用固定版本的 Scalar API Reference 渲染 `/openapi.yaml`，浏览器需要能够访问 jsDelivr CDN。OpenAPI 规范和文档页面作为 Go embed 资源编入服务二进制，部署时无需额外挂载文件。
 
 ## 常用命令
 

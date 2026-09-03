@@ -31,6 +31,10 @@ func NewRouter(
 	healthHandler := handler.NewHealth(postgres, redisClient)
 	exchangeHandler := handler.NewExchange(exchanges, log)
 	summaryHandler := handler.NewSummary(summaryService)
+	docsHandler := handler.NewDocs()
+
+	router.GET("/openapi.yaml", docsHandler.OpenAPI)
+	router.GET("/docs", docsHandler.UI)
 
 	health := router.Group("/health")
 	health.GET("/live", healthHandler.Live)

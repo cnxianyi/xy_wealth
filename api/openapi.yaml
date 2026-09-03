@@ -1,0 +1,323 @@
+openapi: 3.1.0
+jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
+info:
+  title: xy-wealth API
+  version: 0.1.0
+  description: 多交易所、银行及其他资产来源的统一聚合接口。
+  contact:
+    name: xy-wealth
+    url: https://github.com/cnxianyi/xy_wealth
+  license:
+    name: UNLICENSED
+servers:
+  - url: /
+    description: 当前服务
+security: []
+tags:
+  - name: Health
+    description: 服务存活与依赖就绪状态
+  - name: Exchanges
+    description: 单个交易所数据
+  - name: Summary
+    description: 跨数据源聚合结果
+paths:
+  /health/live:
+    get:
+      tags: [Health]
+      operationId: getLiveness
+      summary: 存活检查
+      responses:
+        "200":
+          description: 服务进程正常
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/RequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Liveness"
+  /health/ready:
+    get:
+      tags: [Health]
+      operationId: getReadiness
+      summary: 就绪检查
+      description: 检查 PostgreSQL 和 Redis 是否可用。
+      responses:
+        "200":
+          description: 所有依赖均已就绪
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/RequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Readiness"
+        "503":
+          description: 至少一个依赖不可用
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/RequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Readiness"
+  /api/v1/exchanges/{provider}/balances:
+    get:
+      tags: [Exchanges]
+      operationId: getExchangeBalances
+      summary: 获取交易所余额
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          description: 已注册的交易所标识
+          schema:
+            type: string
+            enum: [binance]
+      responses:
+        "200":
+          description: 交易所余额
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/RequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExchangeBalances"
+        "404":
+          $ref: "#/components/responses/ProviderNotFound"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
+  /api/v1/summary:
+    get:
+      tags: [Summary]
+      operationId: getFullSummary
+      summary: 获取全部资产来源的聚合结果
+      description: Provider 之间并发查询，单个来源失败不会导致整个请求失败。
+      responses:
+        "200":
+          description: 完整聚合快照
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/RequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FullSummary"
+  /api/v1/summary/exchanges:
+    get:
+      tags: [Summary]
+      operationId: getExchangeSummary
+      summary: 获取所有交易所的聚合结果
+      responses:
+        "200":
+          description: 交易所聚合快照
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/RequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExchangeSummary"
+  /api/v1/summary/banks:
+    get:
+      tags: [Summary]
+      operationId: getBankSummary
+      summary: 获取所有银行的聚合结果
+      responses:
+        "200":
+          description: 银行聚合快照
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/RequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BankSummary"
+components:
+  headers:
+    RequestID:
+      description: 请求追踪标识
+      schema:
+        type: string
+  responses:
+    ProviderNotFound:
+      description: 交易所 Provider 未注册
+      headers:
+        X-Request-ID:
+          $ref: "#/components/headers/RequestID"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    UpstreamError:
+      description: 上游交易所请求失败
+      headers:
+        X-Request-ID:
+          $ref: "#/components/headers/RequestID"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+  schemas:
+    Liveness:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status:
+          type: string
+          const: ok
+    Readiness:
+      type: object
+      additionalProperties: false
+      required: [status, checks]
+      properties:
+        status:
+          type: string
+          enum: [ok, not_ready]
+        checks:
+          type: object
+          additionalProperties: false
+          required: [postgres, redis]
+          properties:
+            postgres:
+              $ref: "#/components/schemas/CheckStatus"
+            redis:
+              $ref: "#/components/schemas/CheckStatus"
+    CheckStatus:
+      type: string
+      enum: [ok, error]
+    AssetBalance:
+      type: object
+      additionalProperties: false
+      required: [symbol, free, locked, total]
+      properties:
+        symbol:
+          type: string
+          examples: [BTC]
+        free:
+          $ref: "#/components/schemas/DecimalString"
+        locked:
+          $ref: "#/components/schemas/DecimalString"
+        total:
+          $ref: "#/components/schemas/DecimalString"
+    DecimalString:
+      type: string
+      description: 为避免浮点精度损失，以字符串表示的十进制金额。
+      pattern: "^-?[0-9]+(?:\\.[0-9]+)?$"
+      examples: ["0.12345678"]
+    ExchangeBalances:
+      type: object
+      additionalProperties: false
+      required: [provider, balances]
+      properties:
+        provider:
+          type: string
+          examples: [binance]
+        balances:
+          type: array
+          items:
+            $ref: "#/components/schemas/AssetBalance"
+    ExchangeProviderResult:
+      type: object
+      additionalProperties: false
+      required: [provider, status]
+      properties:
+        provider:
+          type: string
+          examples: [binance]
+        status:
+          $ref: "#/components/schemas/ProviderStatus"
+        balances:
+          type: array
+          items:
+            $ref: "#/components/schemas/AssetBalance"
+        error:
+          type: string
+    BankAccount:
+      type: object
+      additionalProperties: false
+      required: [account_id, currency, balance]
+      properties:
+        account_id:
+          type: string
+        currency:
+          type: string
+          examples: [CNY]
+        balance:
+          $ref: "#/components/schemas/DecimalString"
+    BankProviderResult:
+      type: object
+      additionalProperties: false
+      required: [provider, status]
+      properties:
+        provider:
+          type: string
+        status:
+          $ref: "#/components/schemas/ProviderStatus"
+        accounts:
+          type: array
+          items:
+            $ref: "#/components/schemas/BankAccount"
+        error:
+          type: string
+    ProviderStatus:
+      type: string
+      enum: [ok, error]
+    ExchangeSummary:
+      type: object
+      additionalProperties: false
+      required: [generated_at, exchanges]
+      properties:
+        generated_at:
+          type: string
+          format: date-time
+        exchanges:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExchangeProviderResult"
+    BankSummary:
+      type: object
+      additionalProperties: false
+      required: [generated_at, banks]
+      properties:
+        generated_at:
+          type: string
+          format: date-time
+        banks:
+          type: array
+          items:
+            $ref: "#/components/schemas/BankProviderResult"
+    FullSummary:
+      type: object
+      additionalProperties: false
+      required: [generated_at, exchanges, banks]
+      properties:
+        generated_at:
+          type: string
+          format: date-time
+        exchanges:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExchangeProviderResult"
+        banks:
+          type: array
+          items:
+            $ref: "#/components/schemas/BankProviderResult"
+    ErrorEnvelope:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          $ref: "#/components/schemas/APIError"
+    APIError:
+      type: object
+      additionalProperties: false
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
