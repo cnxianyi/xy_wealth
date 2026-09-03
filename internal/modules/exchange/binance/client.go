@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	maxResponseBytes   = 8 << 20
+	maxResponseBytes   = 32 << 20
 	maxDepthLimit      = 5000
 	maxKlinesLimit     = 1000
 	defaultDepthLimit  = 100
@@ -466,9 +466,12 @@ func (c *Client) doJSON(ctx context.Context, method, path string, query url.Valu
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(io.LimitReader(resp.Body, maxResponseBytes))
+	body, err := io.ReadAll(io.LimitReader(resp.Body, maxResponseBytes+1))
 	if err != nil {
 		return fmt.Errorf("read binance response: %w", err)
+	}
+	if len(body) > maxResponseBytes {
+		return fmt.Errorf("binance response exceeds %d bytes", maxResponseBytes)
 	}
 	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
 		var responseError struct {

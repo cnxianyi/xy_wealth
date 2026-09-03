@@ -173,6 +173,30 @@ func TestClientAPIError(t *testing.T) {
 	}
 }
 
+func TestClientExchangeInfoAcceptsFullResponse(t *testing.T) {
+	const symbol = `{"symbol":"BTCUSDT","status":"TRADING","baseAsset":"BTC","quoteAsset":"USDT"}`
+	const symbolCount = 40000
+	body := `{"timezone":"UTC","symbols":[` + strings.TrimSuffix(strings.Repeat(symbol+",", symbolCount), ",") + `]}`
+	if len(body) <= 2<<20 {
+		t.Fatalf("test response is only %d bytes; want to cover the old 2 MiB limit", len(body))
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(body))
+	}))
+	defer server.Close()
+
+	client := New(config.BinanceConfig{BaseURL: server.URL, HTTPTimeout: time.Second})
+	info, err := client.ExchangeInfo(context.Background(), "")
+	if err != nil {
+		t.Fatalf("ExchangeInfo() error = %v", err)
+	}
+	if len(info.Symbols) != symbolCount {
+		t.Fatalf("symbol count = %d, want %d", len(info.Symbols), symbolCount)
+	}
+}
+
 func TestClientBalances(t *testing.T) {
 	const (
 		apiKey    = "test-api-key"
