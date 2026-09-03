@@ -8,14 +8,49 @@ import (
 
 func TestSpecificationIsOpenAPI31(t *testing.T) {
 	var document struct {
-		OpenAPI string                    `yaml:"openapi"`
-		Paths   map[string]map[string]any `yaml:"paths"`
+		OpenAPI string `yaml:"openapi"`
+		Tags    []struct {
+			Name        string `yaml:"name"`
+			DisplayName string `yaml:"x-displayName"`
+			Parent      string `yaml:"parent"`
+		} `yaml:"tags"`
+		Paths map[string]map[string]any `yaml:"paths"`
 	}
 	if err := yaml.Unmarshal(Specification(), &document); err != nil {
 		t.Fatalf("parse embedded OpenAPI document: %v", err)
 	}
 	if document.OpenAPI != "3.1.0" {
 		t.Fatalf("OpenAPI version = %q, want 3.1.0", document.OpenAPI)
+	}
+
+	tags := make(map[string]struct {
+		parent      string
+		displayName string
+	}, len(document.Tags))
+	for _, tag := range document.Tags {
+		tags[tag.Name] = struct {
+			parent      string
+			displayName string
+		}{parent: tag.Parent, displayName: tag.DisplayName}
+	}
+	for name, want := range map[string]struct {
+		parent      string
+		displayName string
+	}{
+		"Exchanges":   {displayName: "Exchanges"},
+		"Binance":     {parent: "Exchanges", displayName: "Binance"},
+		"BinanceSpot": {parent: "Binance", displayName: "Spot"},
+		"BinanceUSDM": {parent: "Binance", displayName: "USDⓈ-M Futures"},
+		"Bitget":      {parent: "Exchanges", displayName: "Bitget"},
+	} {
+		got, ok := tags[name]
+		if !ok {
+			t.Errorf("OpenAPI document is missing navigation tag %q", name)
+			continue
+		}
+		if got.parent != want.parent || got.displayName != want.displayName {
+			t.Errorf("navigation tag %q = parent %q, display %q; want parent %q, display %q", name, got.parent, got.displayName, want.parent, want.displayName)
+		}
 	}
 
 	for _, path := range []string{

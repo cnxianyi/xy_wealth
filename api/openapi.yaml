@@ -17,7 +17,24 @@ tags:
   - name: Health
     description: 服务存活与依赖就绪状态
   - name: Exchanges
+    x-displayName: Exchanges
     description: 单个交易所数据
+  - name: Binance
+    x-displayName: Binance
+    parent: Exchanges
+    description: Binance 交易所接口
+  - name: BinanceSpot
+    x-displayName: Spot
+    parent: Binance
+    description: Binance Spot 接口
+  - name: BinanceUSDM
+    x-displayName: USDⓈ-M Futures
+    parent: Binance
+    description: Binance USDⓈ-M Futures 接口
+  - name: Bitget
+    x-displayName: Bitget
+    parent: Exchanges
+    description: 预留 Bitget 交易所接口
   - name: Summary
     description: 跨数据源聚合结果
 paths:
@@ -63,7 +80,7 @@ paths:
                 $ref: "#/components/schemas/Readiness"
   /api/v1/exchanges/{provider}/balances:
     get:
-      tags: [Exchanges]
+      tags: [BinanceSpot]
       operationId: getExchangeBalances
       summary: 获取交易所余额
       parameters:
@@ -90,7 +107,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/spot/ping:
     get:
-      tags: [Exchanges]
+      tags: [BinanceSpot]
       operationId: getSpotPing
       summary: Spot API 连通性检查
       parameters:
@@ -113,7 +130,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/spot/time:
     get:
-      tags: [Exchanges]
+      tags: [BinanceSpot]
       operationId: getSpotServerTime
       summary: 获取 Spot 服务器时间
       parameters:
@@ -136,7 +153,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/spot/exchange-info:
     get:
-      tags: [Exchanges]
+      tags: [BinanceSpot]
       operationId: getSpotExchangeInfo
       summary: 获取 Spot 交易规则
       parameters:
@@ -168,7 +185,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/spot/depth:
     get:
-      tags: [Exchanges]
+      tags: [BinanceSpot]
       operationId: getSpotDepth
       summary: 获取 Spot 订单簿
       parameters:
@@ -204,7 +221,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/spot/klines:
     get:
-      tags: [Exchanges]
+      tags: [BinanceSpot]
       operationId: getSpotKlines
       summary: 获取 Spot K 线
       parameters:
@@ -271,7 +288,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/spot/ticker/24hr:
     get:
-      tags: [Exchanges]
+      tags: [BinanceSpot]
       operationId: getSpotTicker24hr
       summary: 获取 Spot 24 小时行情
       parameters:
@@ -297,7 +314,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/spot/ticker/price:
     get:
-      tags: [Exchanges]
+      tags: [BinanceSpot]
       operationId: getSpotTickerPrice
       summary: 获取 Spot 最新价格
       parameters:
@@ -323,7 +340,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/spot/ticker/book:
     get:
-      tags: [Exchanges]
+      tags: [BinanceSpot]
       operationId: getSpotBookTicker
       summary: 获取 Spot 最优买卖价
       parameters:
@@ -349,7 +366,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/usdm/ping:
     get:
-      tags: [Exchanges]
+      tags: [BinanceUSDM]
       operationId: getUsdmFuturesPing
       summary: USDⓈ-M Futures API 连通性检查
       parameters:
@@ -372,7 +389,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/usdm/time:
     get:
-      tags: [Exchanges]
+      tags: [BinanceUSDM]
       operationId: getUsdmFuturesServerTime
       summary: 获取 USDⓈ-M Futures 服务器时间
       parameters:
@@ -395,7 +412,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/usdm/exchange-info:
     get:
-      tags: [Exchanges]
+      tags: [BinanceUSDM]
       operationId: getUsdmFuturesExchangeInfo
       summary: 获取 USDⓈ-M Futures 交易规则
       parameters:
@@ -418,7 +435,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/usdm/depth:
     get:
-      tags: [Exchanges]
+      tags: [BinanceUSDM]
       operationId: getUsdmFuturesDepth
       summary: 获取 USDⓈ-M Futures 订单簿
       parameters:
@@ -454,7 +471,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/usdm/klines:
     get:
-      tags: [Exchanges]
+      tags: [BinanceUSDM]
       operationId: getUsdmFuturesKlines
       summary: 获取 USDⓈ-M Futures K 线
       parameters:
@@ -521,7 +538,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/usdm/ticker/24hr:
     get:
-      tags: [Exchanges]
+      tags: [BinanceUSDM]
       operationId: getUsdmFuturesTicker24hr
       summary: 获取 USDⓈ-M Futures 24 小时行情
       parameters:
@@ -547,7 +564,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/usdm/ticker/price:
     get:
-      tags: [Exchanges]
+      tags: [BinanceUSDM]
       operationId: getUsdmFuturesTickerPrice
       summary: 获取 USDⓈ-M Futures 最新价格
       parameters:
@@ -573,7 +590,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/usdm/ticker/book:
     get:
-      tags: [Exchanges]
+      tags: [BinanceUSDM]
       operationId: getUsdmFuturesBookTicker
       summary: 获取 USDⓈ-M Futures 最优买卖价
       parameters:
@@ -599,7 +616,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/usdm/premium-index:
     get:
-      tags: [Exchanges]
+      tags: [BinanceUSDM]
       operationId: getUsdmFuturesPremiumIndex
       summary: 获取 USDⓈ-M Futures 标记价格和资金费率
       parameters:
