@@ -32,12 +32,15 @@ migrations/                        原生 SQL 迁移
 
 ```bash
 cp .env.example .env
+# 在 .env 中填写 XY_WEALTH_AUTH_SECRET，可用 `openssl rand -hex 32` 生成。
 docker compose up -d postgres redis
 set -a; source .env; set +a
 go run ./cmd/server
 ```
 
 也可以复制 `configs/config.example.yaml` 为 `configs/config.yaml`。环境变量优先级更高，命名规则为 `XY_WEALTH_` 加配置路径，例如 `postgres.dsn` 对应 `XY_WEALTH_POSTGRES_DSN`。可通过 `XY_WEALTH_CONFIG_FILE` 指定其他配置文件。
+
+服务使用本地 Secret 登录和 Redis 会话。调用 `POST /api/v1/auth/login` 并提交配置中的 `auth.secret` 后，会返回有时效的随机 `x_token`；后续请求通过 `x-token` Header 携带。Redis 仅保存 Token 摘要，Secret 和 Token 不会写入日志。除登录、前端静态资源和 `/health/live` 外，其他接口均要求有效 Token。
 
 Binance 账户接口需要只读 API Key。请启用读取权限、配置 IP 白名单，并且不要授予提现权限。未配置密钥时，服务仍可启动，但 Binance 相关响应会标记上游配置错误。
 
@@ -56,9 +59,12 @@ Weex 公共 Spot/Contract 接口不需要密钥；账户余额查询需要配置
 | Method | Path | Description |
 | --- | --- | --- |
 | GET | `/docs` | Scalar API Reference 交互式文档 |
-| GET | `/openapi.yaml` | OpenAPI 3.1.0 原始规范 |
+| GET | `/openapi.yaml` | OpenAPI 3.1.0 原始规范（需要 x-token） |
 | GET | `/health/live` | 进程存活检查 |
 | GET | `/health/ready` | PostgreSQL 与 Redis 就绪检查 |
+| POST | `/api/v1/auth/login` | 使用配置 Secret 获取 x-token |
+| GET | `/api/v1/auth/session` | 检查当前 x-token |
+| POST | `/api/v1/auth/logout` | 注销当前 x-token |
 | GET | `/api/v1/exchanges/binance/balances` | Binance Spot 余额 |
 | GET | `/api/v1/exchanges/bitget/balances` | Bitget Spot 余额 |
 | GET | `/api/v1/exchanges/weex/balances` | Weex Spot 余额 |

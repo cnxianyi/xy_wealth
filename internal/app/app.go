@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/cnxianyi/xy_wealth/internal/config"
+	authmodule "github.com/cnxianyi/xy_wealth/internal/modules/auth"
 	"github.com/cnxianyi/xy_wealth/internal/modules/bank"
 	"github.com/cnxianyi/xy_wealth/internal/modules/exchange"
 	"github.com/cnxianyi/xy_wealth/internal/modules/exchange/binance"
@@ -36,8 +37,9 @@ func Run(ctx context.Context, cfg config.Config, log *zap.Logger) error {
 	}
 	bankProviders := []bank.Provider{}
 	summaryService := summary.New(exchangeProviders, bankProviders)
+	authService := authmodule.New(cfg.Auth, redisClient)
 
-	router := httptransport.NewRouter(cfg, log, postgres, redisClient, exchangeProviders, summaryService)
+	router := httptransport.NewRouter(cfg, log, postgres, redisClient, exchangeProviders, summaryService, authService)
 	server := httptransport.NewServer(cfg.HTTP, router, log)
 
 	log.Info("application initialized",

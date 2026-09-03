@@ -2,6 +2,11 @@ app:
   name: xy-wealth
   environment: development
 
+auth:
+  # 仅通过环境变量或未提交的本地配置填写。
+  secret: ""
+  token_ttl: 24h
+
 http:
   address: ":8080"
   read_timeout: 10s

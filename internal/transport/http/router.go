@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/cnxianyi/xy_wealth/internal/config"
+	authmodule "github.com/cnxianyi/xy_wealth/internal/modules/auth"
 	"github.com/cnxianyi/xy_wealth/internal/modules/exchange"
 	"github.com/cnxianyi/xy_wealth/internal/modules/summary"
 	"github.com/cnxianyi/xy_wealth/internal/transport/http/handler"
@@ -20,6 +21,7 @@ func NewRouter(
 	redisClient *redis.Client,
 	exchanges []exchange.Provider,
 	summaryService *summary.Service,
+	authService *authmodule.Service,
 ) *gin.Engine {
 	if cfg.App.Environment == "production" {
 		gin.SetMode(gin.ReleaseMode)
@@ -31,18 +33,25 @@ func NewRouter(
 	healthHandler := handler.NewHealth(postgres, redisClient)
 	exchangeHandler := handler.NewExchange(exchanges, log)
 	summaryHandler := handler.NewSummary(summaryService)
+	authHandler := handler.NewAuth(authService, log)
 	docsHandler := handler.NewDocs()
+	xToken := appmiddleware.XToken(authService, log)
 
-	router.GET("/openapi.yaml", docsHandler.OpenAPI)
 	router.GET("/docs", docsHandler.UI)
+	router.GET("/openapi.yaml", xToken, docsHandler.OpenAPI)
 
 	health := router.Group("/health")
 	health.GET("/live", healthHandler.Live)
-	health.GET("/ready", healthHandler.Ready)
+	health.GET("/ready", xToken, healthHandler.Ready)
 
 	v1 := router.Group("/api/v1")
-	v1.GET("/exchanges/:provider/balances", exchangeHandler.Balances)
-	spot := v1.Group("/exchanges/:provider/spot")
+	v1.POST("/auth/login", authHandler.Login)
+	protected := v1.Group("")
+	protected.Use(xToken)
+	protected.GET("/auth/session", authHandler.Session)
+	protected.POST("/auth/logout", authHandler.Logout)
+	protected.GET("/exchanges/:provider/balances", exchangeHandler.Balances)
+	spot := protected.Group("/exchanges/:provider/spot")
 	spot.GET("/ping", exchangeHandler.Ping)
 	spot.GET("/time", exchangeHandler.ServerTime)
 	spot.GET("/exchange-info", exchangeHandler.ExchangeInfo)
@@ -51,7 +60,7 @@ func NewRouter(
 	spot.GET("/ticker/24hr", exchangeHandler.Ticker24hr)
 	spot.GET("/ticker/price", exchangeHandler.TickerPrice)
 	spot.GET("/ticker/book", exchangeHandler.BookTicker)
-	futures := v1.Group("/exchanges/:provider/futures/usdm")
+	futures := protected.Group("/exchanges/:provider/futures/usdm")
 	futures.GET("/ping", exchangeHandler.FuturesPing)
 	futures.GET("/time", exchangeHandler.FuturesServerTime)
 	futures.GET("/exchange-info", exchangeHandler.FuturesExchangeInfo)
@@ -65,7 +74,7 @@ func NewRouter(
 	futures.GET("/balances", exchangeHandler.ContractBalances)
 	futures.GET("/account/balances", exchangeHandler.USDSMFuturesAccountBalances)
 	futures.GET("/account/positions", exchangeHandler.USDSMFuturesAccountPositions)
-	usdcMFutures := v1.Group("/exchanges/:provider/futures/usdcm")
+	usdcMFutures := protected.Group("/exchanges/:provider/futures/usdcm")
 	usdcMFutures.GET("/ping", exchangeHandler.USDCMFuturesPing)
 	usdcMFutures.GET("/time", exchangeHandler.USDCMFuturesServerTime)
 	usdcMFutures.GET("/exchange-info", exchangeHandler.USDCMFuturesExchangeInfo)
@@ -77,7 +86,7 @@ func NewRouter(
 	usdcMFutures.GET("/premium-index", exchangeHandler.USDCMFuturesPremiumIndex)
 	usdcMFutures.GET("/account/balances", exchangeHandler.USDCMFuturesAccountBalances)
 	usdcMFutures.GET("/account/positions", exchangeHandler.USDCMFuturesAccountPositions)
-	coinMFutures := v1.Group("/exchanges/:provider/futures/coinm")
+	coinMFutures := protected.Group("/exchanges/:provider/futures/coinm")
 	coinMFutures.GET("/ping", exchangeHandler.CoinMFuturesPing)
 	coinMFutures.GET("/time", exchangeHandler.CoinMFuturesServerTime)
 	coinMFutures.GET("/exchange-info", exchangeHandler.CoinMFuturesExchangeInfo)
@@ -89,9 +98,9 @@ func NewRouter(
 	coinMFutures.GET("/premium-index", exchangeHandler.CoinMFuturesPremiumIndex)
 	coinMFutures.GET("/account/balances", exchangeHandler.COINMFuturesAccountBalances)
 	coinMFutures.GET("/account/positions", exchangeHandler.COINMFuturesAccountPositions)
-	v1.GET("/summary", summaryHandler.All)
-	v1.GET("/summary/exchanges", summaryHandler.Exchanges)
-	v1.GET("/summary/banks", summaryHandler.Banks)
+	protected.GET("/summary", summaryHandler.All)
+	protected.GET("/summary/exchanges", summaryHandler.Exchanges)
+	protected.GET("/summary/banks", summaryHandler.Banks)
 
 	return router
 }

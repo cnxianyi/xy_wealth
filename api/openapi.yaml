@@ -12,8 +12,11 @@ info:
 servers:
   - url: /
     description: 当前服务
-security: []
+security:
+  - XTokenAuth: []
 tags:
+  - name: Auth
+    description: 本地 Secret 登录与 x-token 会话
   - name: Health
     description: 服务存活与依赖就绪状态
   - name: Exchanges
@@ -70,11 +73,73 @@ tags:
   - name: Summary
     description: 跨数据源聚合结果
 paths:
+  /api/v1/auth/login:
+    post:
+      tags: [Auth]
+      operationId: login
+      summary: 使用配置 Secret 登录
+      description: Secret 校验成功后签发有时效的随机 x-token。Secret 和 Token 均不得写入日志。
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: 登录成功
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/RequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "400":
+          $ref: "#/components/responses/InvalidParameter"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "503":
+          $ref: "#/components/responses/AuthenticationUnavailable"
+  /api/v1/auth/session:
+    get:
+      tags: [Auth]
+      operationId: getAuthSession
+      summary: 检查当前 x-token
+      responses:
+        "200":
+          description: Token 有效
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSession"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "503":
+          $ref: "#/components/responses/AuthenticationUnavailable"
+  /api/v1/auth/logout:
+    post:
+      tags: [Auth]
+      operationId: logout
+      summary: 注销当前 x-token
+      responses:
+        "200":
+          description: 注销成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LogoutResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "503":
+          $ref: "#/components/responses/AuthenticationUnavailable"
   /health/live:
     get:
       tags: [Health]
       operationId: getLiveness
       summary: 存活检查
+      security: []
       responses:
         "200":
           description: 服务进程正常
@@ -1454,6 +1519,12 @@ paths:
         "400":
           $ref: "#/components/responses/InvalidParameter"
 components:
+  securitySchemes:
+    XTokenAuth:
+      type: apiKey
+      in: header
+      name: x-token
+      description: 通过登录接口获取的会话 Token。
   parameters:
     Provider:
       name: provider
@@ -1533,6 +1604,24 @@ components:
       schema:
         type: string
   responses:
+    Unauthorized:
+      description: x-token 缺失、无效或已过期
+      headers:
+        X-Request-ID:
+          $ref: "#/components/headers/RequestID"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    AuthenticationUnavailable:
+      description: 鉴权会话存储暂时不可用
+      headers:
+        X-Request-ID:
+          $ref: "#/components/headers/RequestID"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
     InvalidParameter:
       description: 请求参数无效
       headers:
@@ -1570,6 +1659,42 @@ components:
           schema:
             $ref: "#/components/schemas/ErrorEnvelope"
   schemas:
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      required: [secret]
+      properties:
+        secret:
+          type: string
+          minLength: 1
+          writeOnly: true
+    LoginResponse:
+      type: object
+      additionalProperties: false
+      required: [x_token, expires_at]
+      properties:
+        x_token:
+          type: string
+          description: 后续请求通过 x-token Header 携带的随机会话 Token。
+        expires_at:
+          type: string
+          format: date-time
+    AuthSession:
+      type: object
+      additionalProperties: false
+      required: [authenticated]
+      properties:
+        authenticated:
+          type: boolean
+          const: true
+    LogoutResponse:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status:
+          type: string
+          const: ok
     Liveness:
       type: object
       additionalProperties: false

@@ -12,6 +12,7 @@ import (
 
 type Config struct {
 	App      AppConfig      `mapstructure:"app"`
+	Auth     AuthConfig     `mapstructure:"auth"`
 	HTTP     HTTPConfig     `mapstructure:"http"`
 	Log      LogConfig      `mapstructure:"log"`
 	Postgres PostgresConfig `mapstructure:"postgres"`
@@ -19,6 +20,11 @@ type Config struct {
 	Binance  BinanceConfig  `mapstructure:"binance"`
 	Bitget   BitgetConfig   `mapstructure:"bitget"`
 	Weex     WeexConfig     `mapstructure:"weex"`
+}
+
+type AuthConfig struct {
+	Secret   string        `mapstructure:"secret"`
+	TokenTTL time.Duration `mapstructure:"token_ttl"`
 }
 
 type AppConfig struct {
@@ -132,6 +138,12 @@ func (c Config) Validate() error {
 	if c.HTTP.Address == "" {
 		missing = append(missing, "http.address")
 	}
+	if c.Auth.Secret == "" {
+		missing = append(missing, "auth.secret")
+	}
+	if c.Auth.TokenTTL <= 0 {
+		missing = append(missing, "auth.token_ttl")
+	}
 	if c.Postgres.DSN == "" {
 		missing = append(missing, "postgres.dsn")
 	}
@@ -149,6 +161,7 @@ func (c Config) Validate() error {
 
 var envKeys = []string{
 	"app.name", "app.environment",
+	"auth.secret", "auth.token_ttl",
 	"http.address", "http.read_timeout", "http.write_timeout", "http.idle_timeout", "http.shutdown_timeout",
 	"log.level", "log.encoding",
 	"postgres.dsn", "postgres.max_open_conns", "postgres.max_idle_conns", "postgres.conn_max_lifetime", "postgres.conn_max_idle_time",
@@ -161,6 +174,7 @@ var envKeys = []string{
 func setDefaults(v *viper.Viper) {
 	v.SetDefault("app.name", "xy-wealth")
 	v.SetDefault("app.environment", "development")
+	v.SetDefault("auth.token_ttl", "24h")
 	v.SetDefault("http.address", ":8080")
 	v.SetDefault("http.read_timeout", "10s")
 	v.SetDefault("http.write_timeout", "30s")

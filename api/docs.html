@@ -7,18 +7,82 @@
   <style>
     html { box-sizing: border-box; overflow-y: scroll; }
     *, *::before, *::after { box-sizing: inherit; }
-    body { margin: 0; }
+    body { margin: 0; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    #token-gate { min-height: 100vh; display: none; align-items: center; justify-content: center; padding: 24px; background: #100f0f; color: #cecdc3; }
+    #token-card { width: min(100%, 420px); padding: 24px; border: 1px solid #343331; border-radius: 16px; background: #1c1b1a; }
+    #token-card h1 { margin: 0 0 8px; font-size: 22px; }
+    #token-card p { margin: 0 0 20px; color: #878580; line-height: 1.5; }
+    #token-form { display: grid; gap: 12px; }
+    #token-input { width: 100%; padding: 12px 14px; border: 1px solid #403e3c; border-radius: 999px; background: #100f0f; color: inherit; }
+    #token-submit { padding: 12px 16px; border: 0; border-radius: 999px; background: #cecdc3; color: #100f0f; font-weight: 600; }
+    #token-error { min-height: 20px; margin: 0; color: #d14d41; font-size: 14px; }
   </style>
 </head>
 <body>
+  <div id="token-gate">
+    <div id="token-card">
+      <h1>xy-wealth API</h1>
+      <p>请先在 Web 端登录，或在这里粘贴登录接口返回的 x-token。</p>
+      <form id="token-form">
+        <input id="token-input" type="password" autocomplete="off" placeholder="x-token" required>
+        <button id="token-submit" type="submit">打开 API 文档</button>
+        <p id="token-error" role="alert"></p>
+      </form>
+    </div>
+  </div>
   <div id="app"></div>
   <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.67.0"></script>
   <script>
-    window.onload = function () {
+    const tokenKey = "xy-wealth.x-token";
+    const gate = document.getElementById("token-gate");
+    const form = document.getElementById("token-form");
+    const input = document.getElementById("token-input");
+    const error = document.getElementById("token-error");
+
+    function storedToken() {
+      try { return sessionStorage.getItem(tokenKey) || ""; } catch (_) { return ""; }
+    }
+
+    function rememberToken(token) {
+      try { sessionStorage.setItem(tokenKey, token); } catch (_) {}
+    }
+
+    async function openDocs(token) {
+      error.textContent = "";
+      const response = await fetch("/openapi.yaml", { headers: { "x-token": token } });
+      if (!response.ok) {
+        gate.style.display = "flex";
+        error.textContent = response.status === 401 ? "x-token 无效或已过期" : "暂时无法加载 API 文档";
+        return;
+      }
+      rememberToken(token);
+      gate.style.display = "none";
+      const specification = await response.text();
       Scalar.createApiReference("#app", {
-        url: "/openapi.yaml"
+        content: specification,
+        agent: { disabled: true },
+        authentication: {
+          preferredSecurityScheme: "XTokenAuth",
+          securitySchemes: {
+            XTokenAuth: { in: "header", name: "x-token", value: token }
+          }
+        },
+        onBeforeRequest: ({ requestBuilder }) => {
+          requestBuilder.headers.set("x-token", token);
+        }
       });
-    };
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      void openDocs(input.value);
+    });
+
+    window.addEventListener("load", () => {
+      const token = storedToken();
+      if (token) void openDocs(token);
+      else gate.style.display = "flex";
+    });
   </script>
 </body>
 </html>

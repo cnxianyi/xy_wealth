@@ -6,6 +6,7 @@ import (
 )
 
 func TestLoadDefaultsAndEnvironmentOverrides(t *testing.T) {
+	t.Setenv("XY_WEALTH_AUTH_SECRET", "test-auth-secret")
 	t.Setenv("XY_WEALTH_HTTP_ADDRESS", ":9090")
 	t.Setenv("XY_WEALTH_LOG_LEVEL", "debug")
 	t.Setenv("XY_WEALTH_POSTGRES_MAX_OPEN_CONNS", "42")
@@ -30,6 +31,9 @@ func TestLoadDefaultsAndEnvironmentOverrides(t *testing.T) {
 	}
 	if cfg.HTTP.ShutdownTimeout != 10*time.Second {
 		t.Fatalf("shutdown timeout = %s, want 10s", cfg.HTTP.ShutdownTimeout)
+	}
+	if cfg.Auth.Secret != "test-auth-secret" || cfg.Auth.TokenTTL != 24*time.Hour {
+		t.Fatalf("auth config = %#v, want configured secret and 24h TTL", cfg.Auth)
 	}
 	if cfg.Binance.FuturesBaseURL != "https://fapi.binance.com" {
 		t.Fatalf("Futures base URL = %q, want https://fapi.binance.com", cfg.Binance.FuturesBaseURL)

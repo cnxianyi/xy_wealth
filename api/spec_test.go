@@ -8,19 +8,36 @@ import (
 
 func TestSpecificationIsOpenAPI31(t *testing.T) {
 	var document struct {
-		OpenAPI string `yaml:"openapi"`
-		Tags    []struct {
+		OpenAPI  string                `yaml:"openapi"`
+		Security []map[string][]string `yaml:"security"`
+		Tags     []struct {
 			Name        string `yaml:"name"`
 			DisplayName string `yaml:"x-displayName"`
 			Parent      string `yaml:"parent"`
 		} `yaml:"tags"`
-		Paths map[string]map[string]any `yaml:"paths"`
+		Paths map[string]map[string]struct {
+			Security *[]map[string][]string `yaml:"security"`
+		} `yaml:"paths"`
+		Components struct {
+			SecuritySchemes map[string]struct {
+				Type string `yaml:"type"`
+				In   string `yaml:"in"`
+				Name string `yaml:"name"`
+			} `yaml:"securitySchemes"`
+		} `yaml:"components"`
 	}
 	if err := yaml.Unmarshal(Specification(), &document); err != nil {
 		t.Fatalf("parse embedded OpenAPI document: %v", err)
 	}
 	if document.OpenAPI != "3.1.0" {
 		t.Fatalf("OpenAPI version = %q, want 3.1.0", document.OpenAPI)
+	}
+	if len(document.Security) != 1 {
+		t.Fatalf("global security = %#v, want XTokenAuth", document.Security)
+	}
+	scheme, ok := document.Components.SecuritySchemes["XTokenAuth"]
+	if !ok || scheme.Type != "apiKey" || scheme.In != "header" || scheme.Name != "x-token" {
+		t.Fatalf("XTokenAuth scheme = %#v, present = %v", scheme, ok)
 	}
 
 	tags := make(map[string]struct {
@@ -62,6 +79,9 @@ func TestSpecificationIsOpenAPI31(t *testing.T) {
 	}
 
 	for _, path := range []string{
+		"/api/v1/auth/login",
+		"/api/v1/auth/session",
+		"/api/v1/auth/logout",
 		"/health/live",
 		"/health/ready",
 		"/api/v1/exchanges/{provider}/balances",
@@ -114,6 +134,22 @@ func TestSpecificationIsOpenAPI31(t *testing.T) {
 	} {
 		if _, ok := document.Paths[path]; !ok {
 			t.Errorf("OpenAPI document is missing path %q", path)
+		}
+	}
+
+	publicOperations := map[string]bool{
+		"/api/v1/auth/login post": true,
+		"/health/live get":        true,
+	}
+	for path, operations := range document.Paths {
+		for method, operation := range operations {
+			if method == "parameters" {
+				continue
+			}
+			isPublic := operation.Security != nil && len(*operation.Security) == 0
+			if isPublic != publicOperations[path+" "+method] {
+				t.Errorf("%s %s public = %v, want %v", method, path, isPublic, publicOperations[path+" "+method])
+			}
 		}
 	}
 }
