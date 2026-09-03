@@ -29,6 +29,18 @@ describe("ApiClient", () => {
     expect(new Headers(request?.headers).get("x-token")).toBe("token-from-session");
   });
 
+  it("calls the browser fetch function with the global receiver", async () => {
+    const browserFetch = vi.fn(function (this: unknown) {
+      if (this !== globalThis) throw new TypeError("Illegal invocation");
+      return Promise.resolve(jsonResponse({ x_token: "new-token", expires_at: "tomorrow" }));
+    }) as unknown as typeof fetch;
+    vi.stubGlobal("fetch", browserFetch);
+    const client = new ApiClient();
+
+    await expect(client.login("configured-secret")).resolves.toMatchObject({ x_token: "new-token" });
+    expect(browserFetch).toHaveBeenCalledOnce();
+  });
+
   it("posts the secret without persisting it or attaching a stale token", async () => {
     storeToken("old-token");
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(jsonResponse({ x_token: "new-token", expires_at: "tomorrow" }));
