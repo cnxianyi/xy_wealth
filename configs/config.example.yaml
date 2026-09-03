@@ -46,3 +46,4 @@ weex:
   secret_key: ""
   passphrase: ""
   http_timeout: 10s
+  include_zero: false

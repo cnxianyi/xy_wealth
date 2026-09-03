@@ -61,6 +61,22 @@ type SymbolInfo struct {
 	QuoteAsset                 string           `json:"quote_asset"`
 	QuotePrecision             int              `json:"quote_precision"`
 	QuoteAssetPrecision        int              `json:"quote_asset_precision"`
+	TickSize                   string           `json:"tick_size,omitempty"`
+	StepSize                   string           `json:"step_size,omitempty"`
+	MinTradeAmount             string           `json:"min_trade_amount,omitempty"`
+	MaxTradeAmount             string           `json:"max_trade_amount,omitempty"`
+	TakerFeeRate               string           `json:"taker_fee_rate,omitempty"`
+	MakerFeeRate               string           `json:"maker_fee_rate,omitempty"`
+	BuyLimitPriceRatio         string           `json:"buy_limit_price_ratio,omitempty"`
+	SellLimitPriceRatio        string           `json:"sell_limit_price_ratio,omitempty"`
+	MarketBuyLimitSize         string           `json:"market_buy_limit_size,omitempty"`
+	MarketSellLimitSize        string           `json:"market_sell_limit_size,omitempty"`
+	MarketFallbackPriceRatio   string           `json:"market_fallback_price_ratio,omitempty"`
+	EnableTrade                *bool            `json:"enable_trade,omitempty"`
+	EnableDisplay              *bool            `json:"enable_display,omitempty"`
+	DisplayDigitMerge          string           `json:"display_digit_merge,omitempty"`
+	DisplayNew                 *bool            `json:"display_new,omitempty"`
+	DisplayHot                 *bool            `json:"display_hot,omitempty"`
 	BaseCommissionPrecision    int              `json:"base_commission_precision,omitempty"`
 	QuoteCommissionPrecision   int              `json:"quote_commission_precision,omitempty"`
 	OrderTypes                 []string         `json:"order_types,omitempty"`
@@ -108,10 +124,10 @@ type Ticker24hr struct {
 	Symbol             string `json:"symbol"`
 	PriceChange        string `json:"price_change"`
 	PriceChangePercent string `json:"price_change_percent"`
-	WeightedAvgPrice   string `json:"weighted_avg_price"`
-	PrevClosePrice     string `json:"prev_close_price"`
+	WeightedAvgPrice   string `json:"weighted_avg_price,omitempty"`
+	PrevClosePrice     string `json:"prev_close_price,omitempty"`
 	LastPrice          string `json:"last_price"`
-	LastQty            string `json:"last_qty"`
+	LastQty            string `json:"last_qty,omitempty"`
 	BidPrice           string `json:"bid_price"`
 	BidQty             string `json:"bid_qty"`
 	AskPrice           string `json:"ask_price"`
@@ -123,8 +139,8 @@ type Ticker24hr struct {
 	QuoteVolume        string `json:"quote_volume"`
 	OpenTime           int64  `json:"open_time"`
 	CloseTime          int64  `json:"close_time"`
-	FirstID            int64  `json:"first_id"`
-	LastID             int64  `json:"last_id"`
+	FirstID            int64  `json:"first_id,omitempty"`
+	LastID             int64  `json:"last_id,omitempty"`
 	Count              int64  `json:"count"`
 }
 

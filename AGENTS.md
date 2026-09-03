@@ -9,7 +9,7 @@
 
 - 业务按领域和 provider 分模块，交易所模块位于 `internal/modules/exchange/`。
 - Binance 是第一个交易所 provider，按能力区分 Spot、USDⓈ-M Futures 与 COIN-M Futures；后续交易所（如 Bitget）应以独立 provider 扩展，不要把 provider 特有逻辑散落到公共层。
-- Weex 使用独立 provider 包和 Spot/Contract 双 REST 域名；初始化阶段不得注册未实现的业务接口。
+- Weex 使用独立 provider 包和 Spot/Contract 双 REST 域名；Spot 与 Contract 能力分别实现，未实现的能力不得注册。
 - 后续银行等其他资产来源使用独立领域模块（如 `internal/modules/bank/`），通过统一聚合服务对外提供汇总数据。
 - Gin 路由统一暴露各 provider 的数据和跨 provider 汇总接口，路由层不承担上游协议转换和业务逻辑。
 

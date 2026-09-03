@@ -44,6 +44,7 @@ func TestSpecificationIsOpenAPI31(t *testing.T) {
 		"BinanceCoinM": {parent: "Binance", displayName: "COIN-M Futures"},
 		"Bitget":       {parent: "Exchanges", displayName: "Bitget"},
 		"Weex":         {parent: "Exchanges", displayName: "Weex"},
+		"WeexSpot":     {parent: "Weex", displayName: "Spot"},
 	} {
 		got, ok := tags[name]
 		if !ok {

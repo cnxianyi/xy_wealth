@@ -8,6 +8,7 @@ import (
 	"github.com/cnxianyi/xy_wealth/internal/modules/bank"
 	"github.com/cnxianyi/xy_wealth/internal/modules/exchange"
 	"github.com/cnxianyi/xy_wealth/internal/modules/exchange/binance"
+	"github.com/cnxianyi/xy_wealth/internal/modules/exchange/weex"
 	"github.com/cnxianyi/xy_wealth/internal/modules/summary"
 	"github.com/cnxianyi/xy_wealth/internal/platform/database"
 	httptransport "github.com/cnxianyi/xy_wealth/internal/transport/http"
@@ -27,7 +28,10 @@ func Run(ctx context.Context, cfg config.Config, log *zap.Logger) error {
 	}
 	defer redisClient.Close()
 
-	exchangeProviders := []exchange.Provider{binance.New(cfg.Binance)}
+	exchangeProviders := []exchange.Provider{
+		binance.New(cfg.Binance),
+		weex.New(cfg.Weex),
+	}
 	bankProviders := []bank.Provider{}
 	summaryService := summary.New(exchangeProviders, bankProviders)
 

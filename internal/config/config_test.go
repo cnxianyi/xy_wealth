@@ -43,4 +43,7 @@ func TestLoadDefaultsAndEnvironmentOverrides(t *testing.T) {
 	if cfg.Weex.ContractBaseURL != "https://api-contract.weex.com" {
 		t.Fatalf("Weex Contract base URL = %q, want https://api-contract.weex.com", cfg.Weex.ContractBaseURL)
 	}
+	if cfg.Weex.IncludeZero {
+		t.Fatal("Weex IncludeZero = true, want false")
+	}
 }
