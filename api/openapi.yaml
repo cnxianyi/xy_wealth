@@ -38,7 +38,11 @@ tags:
   - name: Bitget
     x-displayName: Bitget
     parent: Exchanges
-    description: 预留 Bitget 交易所接口
+    description: Bitget 交易所接口
+  - name: BitgetSpot
+    x-displayName: Spot
+    parent: Bitget
+    description: Bitget Spot 接口
   - name: Weex
     x-displayName: Weex
     parent: Exchanges
@@ -96,7 +100,7 @@ paths:
                 $ref: "#/components/schemas/Readiness"
   /api/v1/exchanges/{provider}/balances:
     get:
-      tags: [BinanceSpot, WeexSpot]
+      tags: [BinanceSpot, BitgetSpot, WeexSpot]
       operationId: getExchangeBalances
       summary: 获取交易所余额
       parameters:
@@ -106,7 +110,7 @@ paths:
           description: 已注册的交易所标识
           schema:
             type: string
-            enum: [binance, weex]
+            enum: [binance, bitget, weex]
       responses:
         "200":
           description: 交易所余额
@@ -123,7 +127,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/spot/ping:
     get:
-      tags: [BinanceSpot, WeexSpot]
+      tags: [BinanceSpot, BitgetSpot, WeexSpot]
       operationId: getSpotPing
       summary: Spot API 连通性检查
       parameters:
@@ -146,7 +150,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/spot/time:
     get:
-      tags: [BinanceSpot, WeexSpot]
+      tags: [BinanceSpot, BitgetSpot, WeexSpot]
       operationId: getSpotServerTime
       summary: 获取 Spot 服务器时间
       parameters:
@@ -169,7 +173,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/spot/exchange-info:
     get:
-      tags: [BinanceSpot, WeexSpot]
+      tags: [BinanceSpot, BitgetSpot, WeexSpot]
       operationId: getSpotExchangeInfo
       summary: 获取 Spot 交易规则
       parameters:
@@ -201,7 +205,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/spot/depth:
     get:
-      tags: [BinanceSpot, WeexSpot]
+      tags: [BinanceSpot, BitgetSpot, WeexSpot]
       operationId: getSpotDepth
       summary: 获取 Spot 订单簿
       parameters:
@@ -237,7 +241,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/spot/klines:
     get:
-      tags: [BinanceSpot, WeexSpot]
+      tags: [BinanceSpot, BitgetSpot, WeexSpot]
       operationId: getSpotKlines
       summary: 获取 Spot K 线
       parameters:
@@ -304,7 +308,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/spot/ticker/24hr:
     get:
-      tags: [BinanceSpot, WeexSpot]
+      tags: [BinanceSpot, BitgetSpot, WeexSpot]
       operationId: getSpotTicker24hr
       summary: 获取 Spot 24 小时行情
       parameters:
@@ -330,7 +334,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/spot/ticker/price:
     get:
-      tags: [BinanceSpot, WeexSpot]
+      tags: [BinanceSpot, BitgetSpot, WeexSpot]
       operationId: getSpotTickerPrice
       summary: 获取 Spot 最新价格
       parameters:
@@ -356,7 +360,7 @@ paths:
           $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/spot/ticker/book:
     get:
-      tags: [BinanceSpot, WeexSpot]
+      tags: [BinanceSpot, BitgetSpot, WeexSpot]
       operationId: getSpotBookTicker
       summary: 获取 Spot 最优买卖价
       parameters:
@@ -1144,7 +1148,7 @@ components:
       description: 已注册的交易所标识
       schema:
         type: string
-        enum: [binance, weex]
+        enum: [binance, bitget, weex]
     BinanceProvider:
       name: provider
       in: path
@@ -1165,7 +1169,7 @@ components:
       name: symbol
       in: query
       required: true
-      description: Binance 或 Weex Spot 交易对
+      description: Binance、Bitget 或 Weex Spot 交易对
       schema:
         type: string
         examples: [BTCUSDT]
@@ -1282,7 +1286,7 @@ components:
       properties:
         provider:
           type: string
-          examples: [binance, weex]
+          examples: [binance, bitget, weex]
         status:
           type: string
           const: ok
@@ -1293,7 +1297,7 @@ components:
       properties:
         provider:
           type: string
-          examples: [binance, weex]
+          examples: [binance, bitget, weex]
         server_time:
           type: integer
           format: int64
@@ -1305,7 +1309,7 @@ components:
       properties:
         provider:
           type: string
-          examples: [binance, weex]
+          examples: [binance, bitget, weex]
         info:
           $ref: "#/components/schemas/ExchangeInfo"
     ExchangeInfo:
@@ -1376,6 +1380,8 @@ components:
           $ref: "#/components/schemas/DecimalString"
         max_trade_amount:
           $ref: "#/components/schemas/DecimalString"
+        min_trade_usdt:
+          $ref: "#/components/schemas/DecimalString"
         taker_fee_rate:
           $ref: "#/components/schemas/DecimalString"
         maker_fee_rate:
@@ -1440,7 +1446,7 @@ components:
       properties:
         provider:
           type: string
-          examples: [binance, weex]
+          examples: [binance, bitget, weex]
         order_book:
           $ref: "#/components/schemas/OrderBook"
     OrderBook:
@@ -1471,6 +1477,10 @@ components:
               - $ref: "#/components/schemas/DecimalString"
             minItems: 2
             maxItems: 2
+        time:
+          type: integer
+          format: int64
+          description: 上游订单簿时间戳（部分交易所提供）
     SpotKlines:
       type: object
       additionalProperties: false
@@ -1478,7 +1488,7 @@ components:
       properties:
         provider:
           type: string
-          examples: [binance, weex]
+          examples: [binance, bitget, weex]
         klines:
           type: array
           items:
@@ -1522,7 +1532,7 @@ components:
       properties:
         provider:
           type: string
-          examples: [binance]
+          examples: [binance, bitget, weex]
         ticker:
           $ref: "#/components/schemas/Ticker24hr"
     Ticker24hr:
@@ -1583,7 +1593,7 @@ components:
       properties:
         provider:
           type: string
-          examples: [binance]
+          examples: [binance, bitget, weex]
         ticker:
           $ref: "#/components/schemas/PriceTicker"
     PriceTicker:
@@ -1605,7 +1615,7 @@ components:
       properties:
         provider:
           type: string
-          examples: [binance]
+          examples: [binance, bitget, weex]
         ticker:
           $ref: "#/components/schemas/BookTicker"
     BookTicker:
@@ -2486,7 +2496,7 @@ components:
       properties:
         provider:
           type: string
-          examples: [binance]
+          examples: [binance, bitget, weex]
         balances:
           type: array
           items:
@@ -2498,7 +2508,7 @@ components:
       properties:
         provider:
           type: string
-          examples: [binance]
+          examples: [binance, bitget, weex]
         status:
           $ref: "#/components/schemas/ProviderStatus"
         balances:

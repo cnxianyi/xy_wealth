@@ -65,6 +65,7 @@ type SymbolInfo struct {
 	StepSize                   string           `json:"step_size,omitempty"`
 	MinTradeAmount             string           `json:"min_trade_amount,omitempty"`
 	MaxTradeAmount             string           `json:"max_trade_amount,omitempty"`
+	MinTradeUSDT               string           `json:"min_trade_usdt,omitempty"`
 	TakerFeeRate               string           `json:"taker_fee_rate,omitempty"`
 	MakerFeeRate               string           `json:"maker_fee_rate,omitempty"`
 	BuyLimitPriceRatio         string           `json:"buy_limit_price_ratio,omitempty"`
@@ -94,6 +95,7 @@ type OrderBook struct {
 	LastUpdateID int64      `json:"last_update_id"`
 	Bids         [][]string `json:"bids"`
 	Asks         [][]string `json:"asks"`
+	Time         int64      `json:"time,omitempty"`
 }
 
 type KlinesRequest struct {

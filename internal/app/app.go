@@ -8,6 +8,7 @@ import (
 	"github.com/cnxianyi/xy_wealth/internal/modules/bank"
 	"github.com/cnxianyi/xy_wealth/internal/modules/exchange"
 	"github.com/cnxianyi/xy_wealth/internal/modules/exchange/binance"
+	"github.com/cnxianyi/xy_wealth/internal/modules/exchange/bitget"
 	"github.com/cnxianyi/xy_wealth/internal/modules/exchange/weex"
 	"github.com/cnxianyi/xy_wealth/internal/modules/summary"
 	"github.com/cnxianyi/xy_wealth/internal/platform/database"
@@ -30,6 +31,7 @@ func Run(ctx context.Context, cfg config.Config, log *zap.Logger) error {
 
 	exchangeProviders := []exchange.Provider{
 		binance.New(cfg.Binance),
+		bitget.New(cfg.Bitget),
 		weex.New(cfg.Weex),
 	}
 	bankProviders := []bank.Provider{}

@@ -17,6 +17,7 @@ type Config struct {
 	Postgres PostgresConfig `mapstructure:"postgres"`
 	Redis    RedisConfig    `mapstructure:"redis"`
 	Binance  BinanceConfig  `mapstructure:"binance"`
+	Bitget   BitgetConfig   `mapstructure:"bitget"`
 	Weex     WeexConfig     `mapstructure:"weex"`
 }
 
@@ -65,6 +66,15 @@ type BinanceConfig struct {
 	RecvWindow          int64         `mapstructure:"recv_window"`
 	HTTPTimeout         time.Duration `mapstructure:"http_timeout"`
 	IncludeZero         bool          `mapstructure:"include_zero"`
+}
+
+type BitgetConfig struct {
+	BaseURL     string        `mapstructure:"base_url"`
+	APIKey      string        `mapstructure:"api_key"`
+	SecretKey   string        `mapstructure:"secret_key"`
+	Passphrase  string        `mapstructure:"passphrase"`
+	HTTPTimeout time.Duration `mapstructure:"http_timeout"`
+	IncludeZero bool          `mapstructure:"include_zero"`
 }
 
 type WeexConfig struct {
@@ -144,6 +154,7 @@ var envKeys = []string{
 	"postgres.dsn", "postgres.max_open_conns", "postgres.max_idle_conns", "postgres.conn_max_lifetime", "postgres.conn_max_idle_time",
 	"redis.address", "redis.password", "redis.db", "redis.pool_size", "redis.dial_timeout", "redis.read_timeout", "redis.write_timeout",
 	"binance.base_url", "binance.futures_base_url", "binance.coin_m_futures_base_url", "binance.api_key", "binance.secret_key", "binance.recv_window", "binance.http_timeout", "binance.include_zero",
+	"bitget.base_url", "bitget.api_key", "bitget.secret_key", "bitget.passphrase", "bitget.http_timeout", "bitget.include_zero",
 	"weex.spot_base_url", "weex.contract_base_url", "weex.api_key", "weex.secret_key", "weex.passphrase", "weex.http_timeout", "weex.include_zero",
 }
 
@@ -174,6 +185,9 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("binance.recv_window", 5000)
 	v.SetDefault("binance.http_timeout", "10s")
 	v.SetDefault("binance.include_zero", false)
+	v.SetDefault("bitget.base_url", "https://api.bitget.com")
+	v.SetDefault("bitget.http_timeout", "10s")
+	v.SetDefault("bitget.include_zero", false)
 	v.SetDefault("weex.spot_base_url", "https://api-spot.weex.com")
 	v.SetDefault("weex.contract_base_url", "https://api-contract.weex.com")
 	v.SetDefault("weex.http_timeout", "10s")

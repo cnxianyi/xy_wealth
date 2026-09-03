@@ -43,6 +43,7 @@ func TestSpecificationIsOpenAPI31(t *testing.T) {
 		"BinanceUSDM":  {parent: "Binance", displayName: "USDⓈ-M Futures"},
 		"BinanceCoinM": {parent: "Binance", displayName: "COIN-M Futures"},
 		"Bitget":       {parent: "Exchanges", displayName: "Bitget"},
+		"BitgetSpot":   {parent: "Bitget", displayName: "Spot"},
 		"Weex":         {parent: "Exchanges", displayName: "Weex"},
 		"WeexSpot":     {parent: "Weex", displayName: "Spot"},
 		"WeexContract": {parent: "Weex", displayName: "Contract"},
