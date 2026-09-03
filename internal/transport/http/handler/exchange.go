@@ -17,6 +17,8 @@ type Exchange struct {
 	futuresProviders         map[string]exchange.USDSMFuturesProvider
 	positionProviders        map[string]exchange.ContractPositionProvider
 	contractBalanceProviders map[string]exchange.ContractBalanceProvider
+	usdmAccountProviders     map[string]exchange.USDSMFuturesAccountProvider
+	coinmAccountProviders    map[string]exchange.COINMFuturesAccountProvider
 	coinMFuturesProviders    map[string]exchange.COINMFuturesProvider
 	log                      *zap.Logger
 }
@@ -27,6 +29,8 @@ func NewExchange(providers []exchange.Provider, log *zap.Logger) *Exchange {
 	futuresProviders := make(map[string]exchange.USDSMFuturesProvider, len(providers))
 	positionProviders := make(map[string]exchange.ContractPositionProvider, len(providers))
 	contractBalanceProviders := make(map[string]exchange.ContractBalanceProvider, len(providers))
+	usdmAccountProviders := make(map[string]exchange.USDSMFuturesAccountProvider, len(providers))
+	coinmAccountProviders := make(map[string]exchange.COINMFuturesAccountProvider, len(providers))
 	coinMFuturesProviders := make(map[string]exchange.COINMFuturesProvider, len(providers))
 	for _, provider := range providers {
 		registered[provider.Name()] = provider
@@ -42,6 +46,12 @@ func NewExchange(providers []exchange.Provider, log *zap.Logger) *Exchange {
 		if contractBalanceProvider, ok := provider.(exchange.ContractBalanceProvider); ok {
 			contractBalanceProviders[provider.Name()] = contractBalanceProvider
 		}
+		if accountProvider, ok := provider.(exchange.USDSMFuturesAccountProvider); ok {
+			usdmAccountProviders[provider.Name()] = accountProvider
+		}
+		if accountProvider, ok := provider.(exchange.COINMFuturesAccountProvider); ok {
+			coinmAccountProviders[provider.Name()] = accountProvider
+		}
 		if coinMFuturesProvider, ok := provider.(exchange.COINMFuturesProvider); ok {
 			coinMFuturesProviders[provider.Name()] = coinMFuturesProvider
 		}
@@ -52,6 +62,8 @@ func NewExchange(providers []exchange.Provider, log *zap.Logger) *Exchange {
 		futuresProviders:         futuresProviders,
 		positionProviders:        positionProviders,
 		contractBalanceProviders: contractBalanceProviders,
+		usdmAccountProviders:     usdmAccountProviders,
+		coinmAccountProviders:    coinmAccountProviders,
 		coinMFuturesProviders:    coinMFuturesProviders,
 		log:                      log,
 	}
@@ -377,6 +389,58 @@ func (h *Exchange) ContractBalances(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"provider": name, "balances": balances})
 }
 
+func (h *Exchange) USDSMFuturesAccountBalances(c *gin.Context) {
+	name, provider, ok := h.usdmAccountProvider(c)
+	if !ok {
+		return
+	}
+	balances, err := provider.USDSMFuturesAccountBalances(c.Request.Context())
+	if err != nil {
+		h.handleSpotError(c, name, "get Binance USDⓈ-M Futures account balances failed", err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"provider": name, "balances": balances})
+}
+
+func (h *Exchange) USDSMFuturesAccountPositions(c *gin.Context) {
+	name, provider, ok := h.usdmAccountProvider(c)
+	if !ok {
+		return
+	}
+	positions, err := provider.USDSMFuturesPositions(c.Request.Context(), c.Query("symbol"))
+	if err != nil {
+		h.handleSpotError(c, name, "get Binance USDⓈ-M Futures account positions failed", err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"provider": name, "positions": positions})
+}
+
+func (h *Exchange) COINMFuturesAccountBalances(c *gin.Context) {
+	name, provider, ok := h.coinmAccountProvider(c)
+	if !ok {
+		return
+	}
+	balances, err := provider.COINMFuturesAccountBalances(c.Request.Context())
+	if err != nil {
+		h.handleSpotError(c, name, "get Binance COIN-M Futures account balances failed", err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"provider": name, "balances": balances})
+}
+
+func (h *Exchange) COINMFuturesAccountPositions(c *gin.Context) {
+	name, provider, ok := h.coinmAccountProvider(c)
+	if !ok {
+		return
+	}
+	positions, err := provider.COINMFuturesPositions(c.Request.Context(), c.Query("symbol"))
+	if err != nil {
+		h.handleSpotError(c, name, "get Binance COIN-M Futures account positions failed", err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"provider": name, "positions": positions})
+}
+
 func (h *Exchange) CoinMFuturesPing(c *gin.Context) {
 	name, provider, ok := h.coinMFuturesProvider(c)
 	if !ok {
@@ -582,6 +646,42 @@ func (h *Exchange) contractBalanceProvider(c *gin.Context) (string, exchange.Con
 	if _, registered := h.providers[name]; registered {
 		c.JSON(http.StatusNotImplemented, gin.H{
 			"error": gin.H{"code": "endpoint_not_supported", "message": "contract balance endpoint is not supported by this provider"},
+		})
+		return "", nil, false
+	}
+	c.JSON(http.StatusNotFound, gin.H{
+		"error": gin.H{"code": "provider_not_found", "message": "exchange provider not found"},
+	})
+	return "", nil, false
+}
+
+func (h *Exchange) usdmAccountProvider(c *gin.Context) (string, exchange.USDSMFuturesAccountProvider, bool) {
+	name := c.Param("provider")
+	provider, ok := h.usdmAccountProviders[name]
+	if ok {
+		return name, provider, true
+	}
+	if _, registered := h.providers[name]; registered {
+		c.JSON(http.StatusNotImplemented, gin.H{
+			"error": gin.H{"code": "endpoint_not_supported", "message": "USDⓈ-M Futures account endpoint is not supported by this provider"},
+		})
+		return "", nil, false
+	}
+	c.JSON(http.StatusNotFound, gin.H{
+		"error": gin.H{"code": "provider_not_found", "message": "exchange provider not found"},
+	})
+	return "", nil, false
+}
+
+func (h *Exchange) coinmAccountProvider(c *gin.Context) (string, exchange.COINMFuturesAccountProvider, bool) {
+	name := c.Param("provider")
+	provider, ok := h.coinmAccountProviders[name]
+	if ok {
+		return name, provider, true
+	}
+	if _, registered := h.providers[name]; registered {
+		c.JSON(http.StatusNotImplemented, gin.H{
+			"error": gin.H{"code": "endpoint_not_supported", "message": "COIN-M Futures account endpoint is not supported by this provider"},
 		})
 		return "", nil, false
 	}

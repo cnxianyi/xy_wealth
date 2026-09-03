@@ -656,6 +656,61 @@ paths:
           $ref: "#/components/responses/EndpointNotSupported"
         "502":
           $ref: "#/components/responses/UpstreamError"
+  /api/v1/exchanges/{provider}/futures/usdm/account/balances:
+    get:
+      tags: [BinanceUSDM]
+      operationId: getBinanceUsdmFuturesAccountBalances
+      summary: 获取 Binance USDⓈ-M Futures 账户余额
+      parameters:
+        - $ref: "#/components/parameters/BinanceProvider"
+      responses:
+        "200":
+          description: Binance USDⓈ-M Futures 账户余额
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/RequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FuturesAccountBalances"
+        "404":
+          $ref: "#/components/responses/ProviderNotFound"
+        "501":
+          $ref: "#/components/responses/EndpointNotSupported"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
+  /api/v1/exchanges/{provider}/futures/usdm/account/positions:
+    get:
+      tags: [BinanceUSDM]
+      operationId: getBinanceUsdmFuturesAccountPositions
+      summary: 获取 Binance USDⓈ-M Futures 账户持仓
+      parameters:
+        - $ref: "#/components/parameters/BinanceProvider"
+        - name: symbol
+          in: query
+          required: false
+          description: 交易对；不传则返回所有有持仓或未成交委托的交易对
+          schema:
+            type: string
+            examples: [BTCUSDT]
+      responses:
+        "200":
+          description: Binance USDⓈ-M Futures 账户持仓
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/RequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FuturesPositions"
+        "400":
+          $ref: "#/components/responses/InvalidParameter"
+        "404":
+          $ref: "#/components/responses/ProviderNotFound"
+        "501":
+          $ref: "#/components/responses/EndpointNotSupported"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/usdm/positions:
     get:
       tags: [WeexContract]
@@ -979,6 +1034,61 @@ paths:
           $ref: "#/components/responses/EndpointNotSupported"
         "502":
           $ref: "#/components/responses/UpstreamError"
+  /api/v1/exchanges/{provider}/futures/coinm/account/balances:
+    get:
+      tags: [BinanceCoinM]
+      operationId: getBinanceCoinMFuturesAccountBalances
+      summary: 获取 Binance COIN-M Futures 账户余额
+      parameters:
+        - $ref: "#/components/parameters/BinanceProvider"
+      responses:
+        "200":
+          description: Binance COIN-M Futures 账户余额
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/RequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FuturesAccountBalances"
+        "404":
+          $ref: "#/components/responses/ProviderNotFound"
+        "501":
+          $ref: "#/components/responses/EndpointNotSupported"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
+  /api/v1/exchanges/{provider}/futures/coinm/account/positions:
+    get:
+      tags: [BinanceCoinM]
+      operationId: getBinanceCoinMFuturesAccountPositions
+      summary: 获取 Binance COIN-M Futures 账户持仓
+      parameters:
+        - $ref: "#/components/parameters/BinanceProvider"
+        - name: symbol
+          in: query
+          required: false
+          description: 合约符号；不传则返回所有交易对持仓。Binance COIN-M 会将合约符号转换为上游要求的 pair 参数
+          schema:
+            type: string
+            examples: [BTCUSD_PERP]
+      responses:
+        "200":
+          description: Binance COIN-M Futures 账户持仓
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/RequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FuturesPositions"
+        "400":
+          $ref: "#/components/responses/InvalidParameter"
+        "404":
+          $ref: "#/components/responses/ProviderNotFound"
+        "501":
+          $ref: "#/components/responses/EndpointNotSupported"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
   /api/v1/summary:
     get:
       tags: [Summary]
@@ -1035,6 +1145,14 @@ components:
       schema:
         type: string
         enum: [binance, weex]
+    BinanceProvider:
+      name: provider
+      in: path
+      required: true
+      description: Binance 交易所标识
+      schema:
+        type: string
+        enum: [binance]
     WeexProvider:
       name: provider
       in: path
@@ -2242,6 +2360,125 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AssetBalance"
+    FuturesAccountBalances:
+      type: object
+      additionalProperties: false
+      required: [provider, balances]
+      properties:
+        provider:
+          type: string
+          examples: [binance]
+        balances:
+          type: array
+          items:
+            $ref: "#/components/schemas/FuturesAccountBalance"
+    FuturesAccountBalance:
+      type: object
+      additionalProperties: false
+      required: [asset, balance, update_time]
+      properties:
+        account_alias:
+          type: string
+        asset:
+          type: string
+          examples: [USDT]
+        balance:
+          $ref: "#/components/schemas/DecimalString"
+        withdraw_available:
+          $ref: "#/components/schemas/DecimalString"
+        cross_wallet_balance:
+          $ref: "#/components/schemas/DecimalString"
+        cross_unrealized_profit:
+          $ref: "#/components/schemas/DecimalString"
+        available_balance:
+          $ref: "#/components/schemas/DecimalString"
+        max_withdraw_amount:
+          $ref: "#/components/schemas/DecimalString"
+        margin_available:
+          type: boolean
+        update_time:
+          type: integer
+          format: int64
+    FuturesPositions:
+      type: object
+      additionalProperties: false
+      required: [provider, positions]
+      properties:
+        provider:
+          type: string
+          examples: [binance]
+        positions:
+          type: array
+          items:
+            $ref: "#/components/schemas/FuturesPosition"
+    FuturesPosition:
+      type: object
+      additionalProperties: false
+      required: [symbol, position_side, position_amount, entry_price, mark_price, unrealized_profit, liquidation_price, leverage, update_time]
+      properties:
+        symbol:
+          type: string
+          examples: [BTCUSDT]
+        pair:
+          type: string
+          examples: [BTCUSD]
+        position_side:
+          type: string
+          enum: [BOTH, LONG, SHORT]
+        position_amount:
+          $ref: "#/components/schemas/DecimalString"
+        entry_price:
+          $ref: "#/components/schemas/DecimalString"
+        break_even_price:
+          $ref: "#/components/schemas/DecimalString"
+        mark_price:
+          $ref: "#/components/schemas/DecimalString"
+        unrealized_profit:
+          $ref: "#/components/schemas/DecimalString"
+        liquidation_price:
+          $ref: "#/components/schemas/DecimalString"
+        leverage:
+          $ref: "#/components/schemas/DecimalString"
+        margin_type:
+          type: string
+          enum: [cross, isolated]
+        isolated_margin:
+          $ref: "#/components/schemas/DecimalString"
+        is_auto_add_margin:
+          type: boolean
+        notional:
+          $ref: "#/components/schemas/DecimalString"
+        notional_value:
+          $ref: "#/components/schemas/DecimalString"
+        margin_asset:
+          type: string
+        isolated_wallet:
+          $ref: "#/components/schemas/DecimalString"
+        initial_margin:
+          $ref: "#/components/schemas/DecimalString"
+        maintenance_margin:
+          $ref: "#/components/schemas/DecimalString"
+        position_initial_margin:
+          $ref: "#/components/schemas/DecimalString"
+        open_order_initial_margin:
+          $ref: "#/components/schemas/DecimalString"
+        max_notional_value:
+          $ref: "#/components/schemas/DecimalString"
+        max_quantity:
+          $ref: "#/components/schemas/DecimalString"
+        bid_notional:
+          $ref: "#/components/schemas/DecimalString"
+        ask_notional:
+          $ref: "#/components/schemas/DecimalString"
+        adl:
+          type: integer
+          format: int64
+        adl_quantile:
+          type: integer
+          format: int64
+        update_time:
+          type: integer
+          format: int64
     ExchangeBalances:
       type: object
       additionalProperties: false

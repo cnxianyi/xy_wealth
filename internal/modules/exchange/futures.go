@@ -40,6 +40,22 @@ type ContractBalanceProvider interface {
 	ContractBalances(ctx context.Context) ([]asset.Balance, error)
 }
 
+// USDSMFuturesAccountProvider exposes Binance USDⓈ-M Futures account data.
+// It is separate from the public market provider so account credentials and
+// signed endpoints are not implied by a market-data implementation.
+type USDSMFuturesAccountProvider interface {
+	Provider
+	USDSMFuturesAccountBalances(ctx context.Context) ([]FuturesAccountBalance, error)
+	USDSMFuturesPositions(ctx context.Context, symbol string) ([]FuturesPosition, error)
+}
+
+// COINMFuturesAccountProvider exposes Binance COIN-M Futures account data.
+type COINMFuturesAccountProvider interface {
+	Provider
+	COINMFuturesAccountBalances(ctx context.Context) ([]FuturesAccountBalance, error)
+	COINMFuturesPositions(ctx context.Context, symbol string) ([]FuturesPosition, error)
+}
+
 // COINMFuturesProvider is the public, read-only COIN-M Futures REST surface.
 // Trading, account and listen-key operations are separate capabilities and
 // are intentionally not part of this initial integration.
@@ -232,6 +248,56 @@ type ContractPosition struct {
 	UpdatedTime                int64  `json:"updated_time"`
 	UnrealizePnl               string `json:"unrealize_pnl"`
 	LiquidatePrice             string `json:"liquidate_price"`
+}
+
+// FuturesAccountBalance is the normalized account asset returned by Binance
+// Futures balance endpoints. Decimal values remain strings to preserve exact
+// exchange precision.
+type FuturesAccountBalance struct {
+	AccountAlias          string `json:"account_alias,omitempty"`
+	Asset                 string `json:"asset"`
+	Balance               string `json:"balance"`
+	WithdrawAvailable     string `json:"withdraw_available,omitempty"`
+	CrossWalletBalance    string `json:"cross_wallet_balance,omitempty"`
+	CrossUnrealizedProfit string `json:"cross_unrealized_profit,omitempty"`
+	AvailableBalance      string `json:"available_balance,omitempty"`
+	MaxWithdrawAmount     string `json:"max_withdraw_amount,omitempty"`
+	MarginAvailable       *bool  `json:"margin_available,omitempty"`
+	UpdateTime            int64  `json:"update_time"`
+}
+
+// FuturesPosition is the normalized read-only position view shared by
+// Binance USDⓈ-M and COIN-M Futures. Fields not supplied by a product are
+// omitted from the JSON response.
+type FuturesPosition struct {
+	Symbol                 string `json:"symbol"`
+	Pair                   string `json:"pair,omitempty"`
+	PositionSide           string `json:"position_side"`
+	PositionAmount         string `json:"position_amount"`
+	EntryPrice             string `json:"entry_price"`
+	BreakEvenPrice         string `json:"break_even_price,omitempty"`
+	MarkPrice              string `json:"mark_price"`
+	UnrealizedProfit       string `json:"unrealized_profit"`
+	LiquidationPrice       string `json:"liquidation_price"`
+	Leverage               string `json:"leverage"`
+	MarginType             string `json:"margin_type,omitempty"`
+	IsolatedMargin         string `json:"isolated_margin,omitempty"`
+	IsAutoAddMargin        *bool  `json:"is_auto_add_margin,omitempty"`
+	Notional               string `json:"notional,omitempty"`
+	NotionalValue          string `json:"notional_value,omitempty"`
+	MarginAsset            string `json:"margin_asset,omitempty"`
+	IsolatedWallet         string `json:"isolated_wallet,omitempty"`
+	InitialMargin          string `json:"initial_margin,omitempty"`
+	MaintenanceMargin      string `json:"maintenance_margin,omitempty"`
+	PositionInitialMargin  string `json:"position_initial_margin,omitempty"`
+	OpenOrderInitialMargin string `json:"open_order_initial_margin,omitempty"`
+	MaxNotionalValue       string `json:"max_notional_value,omitempty"`
+	MaxQuantity            string `json:"max_quantity,omitempty"`
+	BidNotional            string `json:"bid_notional,omitempty"`
+	AskNotional            string `json:"ask_notional,omitempty"`
+	ADL                    int64  `json:"adl,omitempty"`
+	ADLQuantile            int64  `json:"adl_quantile,omitempty"`
+	UpdateTime             int64  `json:"update_time"`
 }
 
 type COINMFuturesTicker24hr struct {

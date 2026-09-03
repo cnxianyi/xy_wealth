@@ -94,6 +94,8 @@ Weex 公共 Spot/Contract 接口不需要密钥；账户余额查询需要配置
 | GET | `/api/v1/exchanges/binance/futures/usdm/ticker/price?symbol=BTCUSDT` | USDⓈ-M Futures 最新价格 |
 | GET | `/api/v1/exchanges/binance/futures/usdm/ticker/book?symbol=BTCUSDT` | USDⓈ-M Futures 最优买卖价 |
 | GET | `/api/v1/exchanges/binance/futures/usdm/premium-index?symbol=BTCUSDT` | 标记价格和资金费率 |
+| GET | `/api/v1/exchanges/binance/futures/usdm/account/balances` | Binance USDⓈ-M Futures 账户余额 |
+| GET | `/api/v1/exchanges/binance/futures/usdm/account/positions?symbol=BTCUSDT` | Binance USDⓈ-M Futures 账户持仓 |
 | GET | `/api/v1/exchanges/binance/futures/coinm/ping` | COIN-M Futures 连通性检查 |
 | GET | `/api/v1/exchanges/binance/futures/coinm/time` | COIN-M Futures 服务器时间 |
 | GET | `/api/v1/exchanges/binance/futures/coinm/exchange-info` | COIN-M Futures 交易规则 |
@@ -103,6 +105,8 @@ Weex 公共 Spot/Contract 接口不需要密钥；账户余额查询需要配置
 | GET | `/api/v1/exchanges/binance/futures/coinm/ticker/price?symbol=BTCUSD_PERP` | COIN-M Futures 最新价格 |
 | GET | `/api/v1/exchanges/binance/futures/coinm/ticker/book?symbol=BTCUSD_PERP` | COIN-M Futures 最优买卖价 |
 | GET | `/api/v1/exchanges/binance/futures/coinm/premium-index?symbol=BTCUSD_PERP` | COIN-M Futures 标记价格和资金费率 |
+| GET | `/api/v1/exchanges/binance/futures/coinm/account/balances` | Binance COIN-M Futures 账户余额 |
+| GET | `/api/v1/exchanges/binance/futures/coinm/account/positions?symbol=BTCUSD_PERP` | Binance COIN-M Futures 账户持仓 |
 | GET | `/api/v1/summary/exchanges` | 所有交易所聚合结果 |
 | GET | `/api/v1/summary/banks` | 所有银行聚合结果（当前为空） |
 | GET | `/api/v1/summary` | 所有分类的统一聚合结果 |
@@ -111,9 +115,9 @@ Weex 公共 Spot/Contract 接口不需要密钥；账户余额查询需要配置
 
 当前 Binance Spot 首期只读基础接口已接入：连通性、服务器时间、交易规则、订单簿、K 线和行情。下单、撤单、订单查询、账户流水及用户数据流属于后续阶段，暂未开放。
 
-当前 USDⓈ-M Futures 同样只开放只读基础行情接口；合约下单、持仓、保证金、账户资产和用户数据流属于后续阶段。
+当前 USDⓈ-M Futures 开放只读基础行情、账户余额和账户持仓查询；合约下单、保证金调整和用户数据流属于后续阶段。
 
-当前 COIN-M Futures 同样只开放只读基础行情接口；合约下单、持仓、保证金、账户资产和用户数据流属于后续阶段。
+当前 COIN-M Futures 开放只读基础行情、账户余额和账户持仓查询；合约下单、保证金调整和用户数据流属于后续阶段。
 
 当前 Weex Spot 开放连通性、服务器时间、交易规则、订单簿、K 线、行情和账户余额查询；Weex Contract 开放对应的只读合约行情，以及签名账户余额和持仓查询接口。Spot/Contract 交易写操作属于后续阶段，分别使用 `/api/v1/exchanges/{provider}/spot/...` 和 `/api/v1/exchanges/{provider}/futures/usdm/...` 路由。
 

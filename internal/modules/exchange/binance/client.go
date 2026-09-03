@@ -440,8 +440,32 @@ func (c *Client) Balances(ctx context.Context) ([]asset.Balance, error) {
 }
 
 func (c *Client) getSignedJSON(ctx context.Context, path string, query url.Values, out any) error {
+	query, err := c.signedQuery(query)
+	if err != nil {
+		return err
+	}
+	return c.doJSON(ctx, c.baseURL, http.MethodGet, path, query, true, out)
+}
+
+func (c *Client) getSignedFuturesJSON(ctx context.Context, path string, query url.Values, out any) error {
+	query, err := c.signedQuery(query)
+	if err != nil {
+		return err
+	}
+	return c.doJSON(ctx, c.futuresBaseURL, http.MethodGet, path, query, true, out)
+}
+
+func (c *Client) getSignedCoinMFuturesJSON(ctx context.Context, path string, query url.Values, out any) error {
+	query, err := c.signedQuery(query)
+	if err != nil {
+		return err
+	}
+	return c.doJSON(ctx, c.coinMFuturesBaseURL, http.MethodGet, path, query, true, out)
+}
+
+func (c *Client) signedQuery(query url.Values) (url.Values, error) {
 	if c.apiKey == "" || c.secretKey == "" {
-		return ErrCredentialsMissing
+		return nil, ErrCredentialsMissing
 	}
 	if query == nil {
 		query = url.Values{}
@@ -450,8 +474,7 @@ func (c *Client) getSignedJSON(ctx context.Context, path string, query url.Value
 	query.Set("timestamp", strconv.FormatInt(c.now().UnixMilli(), 10))
 	payload := query.Encode()
 	query.Set("signature", sign(payload, c.secretKey))
-
-	return c.doJSON(ctx, c.baseURL, http.MethodGet, path, query, true, out)
+	return query, nil
 }
 
 func (c *Client) getJSON(ctx context.Context, path string, query url.Values, out any) error {
