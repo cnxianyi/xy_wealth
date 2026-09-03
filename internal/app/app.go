@@ -1,0 +1,45 @@
+package app
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/xy-wealth/xy-wealth/internal/config"
+	"github.com/xy-wealth/xy-wealth/internal/modules/bank"
+	"github.com/xy-wealth/xy-wealth/internal/modules/exchange"
+	"github.com/xy-wealth/xy-wealth/internal/modules/exchange/binance"
+	"github.com/xy-wealth/xy-wealth/internal/modules/summary"
+	"github.com/xy-wealth/xy-wealth/internal/platform/database"
+	httptransport "github.com/xy-wealth/xy-wealth/internal/transport/http"
+	"go.uber.org/zap"
+)
+
+func Run(ctx context.Context, cfg config.Config, log *zap.Logger) error {
+	postgres, err := database.OpenPostgres(ctx, cfg.Postgres)
+	if err != nil {
+		return err
+	}
+	defer postgres.Close()
+
+	redisClient, err := database.OpenRedis(ctx, cfg.Redis)
+	if err != nil {
+		return err
+	}
+	defer redisClient.Close()
+
+	exchangeProviders := []exchange.Provider{binance.New(cfg.Binance)}
+	bankProviders := []bank.Provider{}
+	summaryService := summary.New(exchangeProviders, bankProviders)
+
+	router := httptransport.NewRouter(cfg, log, postgres, redisClient, exchangeProviders, summaryService)
+	server := httptransport.NewServer(cfg.HTTP, router, log)
+
+	log.Info("application initialized",
+		zap.String("name", cfg.App.Name),
+		zap.String("environment", cfg.App.Environment),
+	)
+	if err := server.Run(ctx); err != nil {
+		return fmt.Errorf("run server: %w", err)
+	}
+	return nil
+}

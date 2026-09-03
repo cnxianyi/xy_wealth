@@ -1,0 +1,19 @@
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+configs/config.yaml
+configs/config.*.yaml
+!configs/config.example.yaml
+
+# Build and coverage output
+/bin/
+/dist/
+*.out
+coverage.*
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+
