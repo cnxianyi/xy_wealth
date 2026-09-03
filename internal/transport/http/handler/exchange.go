@@ -1,7 +1,10 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/cnxianyi/xy_wealth/internal/modules/exchange"
 	"github.com/gin-gonic/gin"
@@ -9,16 +12,21 @@ import (
 )
 
 type Exchange struct {
-	providers map[string]exchange.Provider
-	log       *zap.Logger
+	providers     map[string]exchange.Provider
+	spotProviders map[string]exchange.SpotProvider
+	log           *zap.Logger
 }
 
 func NewExchange(providers []exchange.Provider, log *zap.Logger) *Exchange {
 	registered := make(map[string]exchange.Provider, len(providers))
+	spotProviders := make(map[string]exchange.SpotProvider, len(providers))
 	for _, provider := range providers {
 		registered[provider.Name()] = provider
+		if spotProvider, ok := provider.(exchange.SpotProvider); ok {
+			spotProviders[provider.Name()] = spotProvider
+		}
 	}
-	return &Exchange{providers: registered, log: log}
+	return &Exchange{providers: registered, spotProviders: spotProviders, log: log}
 }
 
 func (h *Exchange) Balances(c *gin.Context) {
@@ -40,4 +48,198 @@ func (h *Exchange) Balances(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"provider": name, "balances": balances})
+}
+
+func (h *Exchange) Ping(c *gin.Context) {
+	name, provider, ok := h.spotProvider(c)
+	if !ok {
+		return
+	}
+	if err := provider.Ping(c.Request.Context()); err != nil {
+		h.upstreamError(c, name, "ping exchange failed", err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"provider": name, "status": "ok"})
+}
+
+func (h *Exchange) ServerTime(c *gin.Context) {
+	name, provider, ok := h.spotProvider(c)
+	if !ok {
+		return
+	}
+	serverTime, err := provider.ServerTime(c.Request.Context())
+	if err != nil {
+		h.upstreamError(c, name, "get exchange server time failed", err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"provider": name, "server_time": serverTime.ServerTime})
+}
+
+func (h *Exchange) ExchangeInfo(c *gin.Context) {
+	name, provider, ok := h.spotProvider(c)
+	if !ok {
+		return
+	}
+	info, err := provider.ExchangeInfo(c.Request.Context(), c.Query("symbol"))
+	if err != nil {
+		h.handleSpotError(c, name, "get exchange information failed", err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"provider": name, "info": info})
+}
+
+func (h *Exchange) Depth(c *gin.Context) {
+	name, provider, ok := h.spotProvider(c)
+	if !ok {
+		return
+	}
+	limit, err := parseQueryInt(c, "limit", 0)
+	if err != nil {
+		h.handleSpotError(c, name, "get order book failed", err)
+		return
+	}
+	orderBook, err := provider.Depth(c.Request.Context(), c.Query("symbol"), limit)
+	if err != nil {
+		h.handleSpotError(c, name, "get order book failed", err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"provider": name, "order_book": orderBook})
+}
+
+func (h *Exchange) Klines(c *gin.Context) {
+	name, provider, ok := h.spotProvider(c)
+	if !ok {
+		return
+	}
+	limit, err := parseQueryInt(c, "limit", 0)
+	if err != nil {
+		h.handleSpotError(c, name, "get klines failed", err)
+		return
+	}
+	startTime, err := parseOptionalQueryInt64(c, "startTime")
+	if err != nil {
+		h.handleSpotError(c, name, "get klines failed", err)
+		return
+	}
+	endTime, err := parseOptionalQueryInt64(c, "endTime")
+	if err != nil {
+		h.handleSpotError(c, name, "get klines failed", err)
+		return
+	}
+	klines, err := provider.Klines(c.Request.Context(), exchange.KlinesRequest{
+		Symbol:    c.Query("symbol"),
+		Interval:  c.Query("interval"),
+		StartTime: startTime,
+		EndTime:   endTime,
+		TimeZone:  c.Query("timeZone"),
+		Limit:     limit,
+	})
+	if err != nil {
+		h.handleSpotError(c, name, "get klines failed", err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"provider": name, "klines": klines})
+}
+
+func (h *Exchange) Ticker24hr(c *gin.Context) {
+	name, provider, ok := h.spotProvider(c)
+	if !ok {
+		return
+	}
+	ticker, err := provider.Ticker24hr(c.Request.Context(), c.Query("symbol"))
+	if err != nil {
+		h.handleSpotError(c, name, "get 24-hour ticker failed", err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"provider": name, "ticker": ticker})
+}
+
+func (h *Exchange) TickerPrice(c *gin.Context) {
+	name, provider, ok := h.spotProvider(c)
+	if !ok {
+		return
+	}
+	ticker, err := provider.TickerPrice(c.Request.Context(), c.Query("symbol"))
+	if err != nil {
+		h.handleSpotError(c, name, "get ticker price failed", err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"provider": name, "ticker": ticker})
+}
+
+func (h *Exchange) BookTicker(c *gin.Context) {
+	name, provider, ok := h.spotProvider(c)
+	if !ok {
+		return
+	}
+	ticker, err := provider.BookTicker(c.Request.Context(), c.Query("symbol"))
+	if err != nil {
+		h.handleSpotError(c, name, "get book ticker failed", err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"provider": name, "ticker": ticker})
+}
+
+func (h *Exchange) spotProvider(c *gin.Context) (string, exchange.SpotProvider, bool) {
+	name := c.Param("provider")
+	provider, ok := h.spotProviders[name]
+	if ok {
+		return name, provider, true
+	}
+	if _, registered := h.providers[name]; registered {
+		c.JSON(http.StatusNotImplemented, gin.H{
+			"error": gin.H{"code": "endpoint_not_supported", "message": "spot endpoint is not supported by this provider"},
+		})
+		return "", nil, false
+	}
+	c.JSON(http.StatusNotFound, gin.H{
+		"error": gin.H{"code": "provider_not_found", "message": "exchange provider not found"},
+	})
+	return "", nil, false
+}
+
+func (h *Exchange) handleSpotError(c *gin.Context, provider, operation string, err error) {
+	var parameterError exchange.InvalidParameterError
+	if errors.As(err, &parameterError) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": gin.H{
+				"code":      "invalid_parameter",
+				"message":   parameterError.Error(),
+				"parameter": parameterError.Parameter,
+			},
+		})
+		return
+	}
+	h.upstreamError(c, provider, operation, err)
+}
+
+func (h *Exchange) upstreamError(c *gin.Context, provider, operation string, err error) {
+	h.log.Warn(operation, zap.String("provider", provider), zap.Error(err))
+	c.JSON(http.StatusBadGateway, gin.H{
+		"error": gin.H{"code": "upstream_error", "message": err.Error()},
+	})
+}
+
+func parseQueryInt(c *gin.Context, name string, defaultValue int) (int, error) {
+	value := strings.TrimSpace(c.Query(name))
+	if value == "" {
+		return defaultValue, nil
+	}
+	parsed, err := strconv.Atoi(value)
+	if err != nil {
+		return 0, exchange.InvalidParameterError{Parameter: name, Message: "must be an integer"}
+	}
+	return parsed, nil
+}
+
+func parseOptionalQueryInt64(c *gin.Context, name string) (*int64, error) {
+	value := strings.TrimSpace(c.Query(name))
+	if value == "" {
+		return nil, nil
+	}
+	parsed, err := strconv.ParseInt(value, 10, 64)
+	if err != nil {
+		return nil, exchange.InvalidParameterError{Parameter: name, Message: "must be an integer"}
+	}
+	return &parsed, nil
 }
