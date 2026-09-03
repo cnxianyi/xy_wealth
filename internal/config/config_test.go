@@ -34,4 +34,7 @@ func TestLoadDefaultsAndEnvironmentOverrides(t *testing.T) {
 	if cfg.Binance.FuturesBaseURL != "https://fapi.binance.com" {
 		t.Fatalf("Futures base URL = %q, want https://fapi.binance.com", cfg.Binance.FuturesBaseURL)
 	}
+	if cfg.Binance.CoinMFuturesBaseURL != "https://dapi.binance.com" {
+		t.Fatalf("COIN-M Futures base URL = %q, want https://dapi.binance.com", cfg.Binance.CoinMFuturesBaseURL)
+	}
 }

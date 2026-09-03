@@ -18,6 +18,22 @@ type USDSMFuturesProvider interface {
 	FuturesPremiumIndex(ctx context.Context, symbol string) (FuturesPremiumIndex, error)
 }
 
+// COINMFuturesProvider is the public, read-only COIN-M Futures REST surface.
+// Trading, account and listen-key operations are separate capabilities and
+// are intentionally not part of this initial integration.
+type COINMFuturesProvider interface {
+	Provider
+	CoinMFuturesPing(ctx context.Context) error
+	CoinMFuturesServerTime(ctx context.Context) (ServerTime, error)
+	CoinMFuturesExchangeInfo(ctx context.Context) (COINMFuturesExchangeInfo, error)
+	CoinMFuturesDepth(ctx context.Context, symbol string, limit int) (FuturesOrderBook, error)
+	CoinMFuturesKlines(ctx context.Context, request KlinesRequest) ([]Kline, error)
+	CoinMFuturesTicker24hr(ctx context.Context, symbol string) (COINMFuturesTicker24hr, error)
+	CoinMFuturesTickerPrice(ctx context.Context, symbol string) (COINMFuturesPriceTicker, error)
+	CoinMFuturesBookTicker(ctx context.Context, symbol string) (COINMFuturesBookTicker, error)
+	CoinMFuturesPremiumIndex(ctx context.Context, symbol string) (COINMFuturesPremiumIndex, error)
+}
+
 type USDSMFuturesExchangeInfo struct {
 	Timezone        string                   `json:"timezone"`
 	ServerTime      int64                    `json:"server_time,omitempty"`
@@ -26,6 +42,44 @@ type USDSMFuturesExchangeInfo struct {
 	ExchangeFilters []map[string]any         `json:"exchange_filters,omitempty"`
 	Assets          []FuturesAsset           `json:"assets,omitempty"`
 	Symbols         []USDSMFuturesSymbolInfo `json:"symbols"`
+}
+
+type COINMFuturesExchangeInfo struct {
+	Timezone        string                   `json:"timezone"`
+	ServerTime      int64                    `json:"server_time,omitempty"`
+	RateLimits      []RateLimit              `json:"rate_limits,omitempty"`
+	ExchangeFilters []map[string]any         `json:"exchange_filters,omitempty"`
+	Symbols         []COINMFuturesSymbolInfo `json:"symbols"`
+}
+
+type COINMFuturesSymbolInfo struct {
+	Symbol                string           `json:"symbol"`
+	Pair                  string           `json:"pair"`
+	ContractType          string           `json:"contract_type"`
+	DeliveryDate          int64            `json:"delivery_date"`
+	OnboardDate           int64            `json:"onboard_date"`
+	ContractStatus        string           `json:"contract_status"`
+	MaintMarginPercent    string           `json:"maint_margin_percent,omitempty"`
+	RequiredMarginPercent string           `json:"required_margin_percent,omitempty"`
+	BaseAsset             string           `json:"base_asset"`
+	QuoteAsset            string           `json:"quote_asset"`
+	MarginAsset           string           `json:"margin_asset"`
+	PricePrecision        int              `json:"price_precision"`
+	QuantityPrecision     int              `json:"quantity_precision"`
+	BaseAssetPrecision    int              `json:"base_asset_precision"`
+	QuotePrecision        int              `json:"quote_precision"`
+	UnderlyingType        string           `json:"underlying_type,omitempty"`
+	UnderlyingSubType     []string         `json:"underlying_sub_type,omitempty"`
+	EqualQtyPrecision     int              `json:"equal_qty_precision,omitempty"`
+	TriggerProtect        string           `json:"trigger_protect,omitempty"`
+	LiquidationFee        string           `json:"liquidation_fee,omitempty"`
+	MarketTakeBound       string           `json:"market_take_bound,omitempty"`
+	MaxMoveOrderLimit     int              `json:"max_move_order_limit,omitempty"`
+	ContractSize          int64            `json:"contract_size,omitempty"`
+	OrderTypes            []string         `json:"order_types,omitempty"`
+	TimeInForce           []string         `json:"time_in_force,omitempty"`
+	PermissionSets        []string         `json:"permission_sets,omitempty"`
+	Filters               []map[string]any `json:"filters,omitempty"`
 }
 
 type FuturesAsset struct {
@@ -95,6 +149,56 @@ type FuturesTicker24hr struct {
 
 type FuturesPremiumIndex struct {
 	Symbol               string `json:"symbol"`
+	MarkPrice            string `json:"mark_price"`
+	IndexPrice           string `json:"index_price"`
+	EstimatedSettlePrice string `json:"estimated_settle_price,omitempty"`
+	LastFundingRate      string `json:"last_funding_rate,omitempty"`
+	InterestRate         string `json:"interest_rate,omitempty"`
+	NextFundingTime      int64  `json:"next_funding_time,omitempty"`
+	Time                 int64  `json:"time"`
+}
+
+type COINMFuturesTicker24hr struct {
+	Symbol             string `json:"symbol"`
+	Pair               string `json:"pair"`
+	PriceChange        string `json:"price_change"`
+	PriceChangePercent string `json:"price_change_percent"`
+	WeightedAvgPrice   string `json:"weighted_avg_price"`
+	LastPrice          string `json:"last_price"`
+	LastQty            string `json:"last_qty"`
+	OpenPrice          string `json:"open_price"`
+	HighPrice          string `json:"high_price"`
+	LowPrice           string `json:"low_price"`
+	Volume             string `json:"volume"`
+	BaseVolume         string `json:"base_volume,omitempty"`
+	OpenTime           int64  `json:"open_time"`
+	CloseTime          int64  `json:"close_time"`
+	FirstID            int64  `json:"first_id"`
+	LastID             int64  `json:"last_id"`
+	Count              int64  `json:"count"`
+}
+
+type COINMFuturesPriceTicker struct {
+	Symbol string `json:"symbol"`
+	Pair   string `json:"pair"`
+	Price  string `json:"price"`
+	Time   int64  `json:"time,omitempty"`
+}
+
+type COINMFuturesBookTicker struct {
+	LastUpdateID int64  `json:"last_update_id"`
+	Symbol       string `json:"symbol"`
+	Pair         string `json:"pair"`
+	BidPrice     string `json:"bid_price"`
+	BidQty       string `json:"bid_qty"`
+	AskPrice     string `json:"ask_price"`
+	AskQty       string `json:"ask_qty"`
+	Time         int64  `json:"time,omitempty"`
+}
+
+type COINMFuturesPremiumIndex struct {
+	Symbol               string `json:"symbol"`
+	Pair                 string `json:"pair"`
 	MarkPrice            string `json:"mark_price"`
 	IndexPrice           string `json:"index_price"`
 	EstimatedSettlePrice string `json:"estimated_settle_price,omitempty"`

@@ -39,14 +39,15 @@ var (
 )
 
 type Client struct {
-	baseURL        string
-	futuresBaseURL string
-	apiKey         string
-	secretKey      string
-	recvWindow     int64
-	includeZero    bool
-	httpClient     *http.Client
-	now            func() time.Time
+	baseURL             string
+	futuresBaseURL      string
+	coinMFuturesBaseURL string
+	apiKey              string
+	secretKey           string
+	recvWindow          int64
+	includeZero         bool
+	httpClient          *http.Client
+	now                 func() time.Time
 }
 
 type APIError struct {
@@ -168,15 +169,20 @@ func New(cfg config.BinanceConfig) *Client {
 	if futuresBaseURL == "" {
 		futuresBaseURL = "https://fapi.binance.com"
 	}
+	coinMFuturesBaseURL := cfg.CoinMFuturesBaseURL
+	if coinMFuturesBaseURL == "" {
+		coinMFuturesBaseURL = "https://dapi.binance.com"
+	}
 	return &Client{
-		baseURL:        strings.TrimRight(cfg.BaseURL, "/"),
-		futuresBaseURL: strings.TrimRight(futuresBaseURL, "/"),
-		apiKey:         cfg.APIKey,
-		secretKey:      cfg.SecretKey,
-		recvWindow:     recvWindow,
-		includeZero:    cfg.IncludeZero,
-		httpClient:     &http.Client{Timeout: timeout},
-		now:            time.Now,
+		baseURL:             strings.TrimRight(cfg.BaseURL, "/"),
+		futuresBaseURL:      strings.TrimRight(futuresBaseURL, "/"),
+		coinMFuturesBaseURL: strings.TrimRight(coinMFuturesBaseURL, "/"),
+		apiKey:              cfg.APIKey,
+		secretKey:           cfg.SecretKey,
+		recvWindow:          recvWindow,
+		includeZero:         cfg.IncludeZero,
+		httpClient:          &http.Client{Timeout: timeout},
+		now:                 time.Now,
 	}
 }
 
@@ -454,6 +460,10 @@ func (c *Client) getJSON(ctx context.Context, path string, query url.Values, out
 
 func (c *Client) getFuturesJSON(ctx context.Context, path string, query url.Values, out any) error {
 	return c.doJSON(ctx, c.futuresBaseURL, http.MethodGet, path, query, false, out)
+}
+
+func (c *Client) getCoinMFuturesJSON(ctx context.Context, path string, query url.Values, out any) error {
+	return c.doJSON(ctx, c.coinMFuturesBaseURL, http.MethodGet, path, query, false, out)
 }
 
 func (c *Client) doJSON(ctx context.Context, baseURL, method, path string, query url.Values, signed bool, out any) error {

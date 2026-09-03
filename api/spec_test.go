@@ -37,11 +37,12 @@ func TestSpecificationIsOpenAPI31(t *testing.T) {
 		parent      string
 		displayName string
 	}{
-		"Exchanges":   {displayName: "Exchanges"},
-		"Binance":     {parent: "Exchanges", displayName: "Binance"},
-		"BinanceSpot": {parent: "Binance", displayName: "Spot"},
-		"BinanceUSDM": {parent: "Binance", displayName: "USDⓈ-M Futures"},
-		"Bitget":      {parent: "Exchanges", displayName: "Bitget"},
+		"Exchanges":    {displayName: "Exchanges"},
+		"Binance":      {parent: "Exchanges", displayName: "Binance"},
+		"BinanceSpot":  {parent: "Binance", displayName: "Spot"},
+		"BinanceUSDM":  {parent: "Binance", displayName: "USDⓈ-M Futures"},
+		"BinanceCoinM": {parent: "Binance", displayName: "COIN-M Futures"},
+		"Bitget":       {parent: "Exchanges", displayName: "Bitget"},
 	} {
 		got, ok := tags[name]
 		if !ok {
@@ -74,6 +75,15 @@ func TestSpecificationIsOpenAPI31(t *testing.T) {
 		"/api/v1/exchanges/{provider}/futures/usdm/ticker/price",
 		"/api/v1/exchanges/{provider}/futures/usdm/ticker/book",
 		"/api/v1/exchanges/{provider}/futures/usdm/premium-index",
+		"/api/v1/exchanges/{provider}/futures/coinm/ping",
+		"/api/v1/exchanges/{provider}/futures/coinm/time",
+		"/api/v1/exchanges/{provider}/futures/coinm/exchange-info",
+		"/api/v1/exchanges/{provider}/futures/coinm/depth",
+		"/api/v1/exchanges/{provider}/futures/coinm/klines",
+		"/api/v1/exchanges/{provider}/futures/coinm/ticker/24hr",
+		"/api/v1/exchanges/{provider}/futures/coinm/ticker/price",
+		"/api/v1/exchanges/{provider}/futures/coinm/ticker/book",
+		"/api/v1/exchanges/{provider}/futures/coinm/premium-index",
 		"/api/v1/summary",
 		"/api/v1/summary/exchanges",
 		"/api/v1/summary/banks",

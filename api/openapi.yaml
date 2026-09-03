@@ -31,6 +31,10 @@ tags:
     x-displayName: USDⓈ-M Futures
     parent: Binance
     description: Binance USDⓈ-M Futures 接口
+  - name: BinanceCoinM
+    x-displayName: COIN-M Futures
+    parent: Binance
+    description: Binance COIN-M Futures 接口
   - name: Bitget
     x-displayName: Bitget
     parent: Exchanges
@@ -640,6 +644,274 @@ paths:
           $ref: "#/components/responses/EndpointNotSupported"
         "502":
           $ref: "#/components/responses/UpstreamError"
+  /api/v1/exchanges/{provider}/futures/coinm/ping:
+    get:
+      tags: [BinanceCoinM]
+      operationId: getCoinMFuturesPing
+      summary: COIN-M Futures API 连通性检查
+      parameters:
+        - $ref: "#/components/parameters/Provider"
+      responses:
+        "200":
+          description: Binance COIN-M Futures API 可访问
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/RequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FuturesPing"
+        "404":
+          $ref: "#/components/responses/ProviderNotFound"
+        "501":
+          $ref: "#/components/responses/EndpointNotSupported"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
+  /api/v1/exchanges/{provider}/futures/coinm/time:
+    get:
+      tags: [BinanceCoinM]
+      operationId: getCoinMFuturesServerTime
+      summary: 获取 COIN-M Futures 服务器时间
+      parameters:
+        - $ref: "#/components/parameters/Provider"
+      responses:
+        "200":
+          description: Binance COIN-M Futures 服务器时间（毫秒）
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/RequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FuturesServerTime"
+        "404":
+          $ref: "#/components/responses/ProviderNotFound"
+        "501":
+          $ref: "#/components/responses/EndpointNotSupported"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
+  /api/v1/exchanges/{provider}/futures/coinm/exchange-info:
+    get:
+      tags: [BinanceCoinM]
+      operationId: getCoinMFuturesExchangeInfo
+      summary: 获取 COIN-M Futures 交易规则
+      parameters:
+        - $ref: "#/components/parameters/Provider"
+      responses:
+        "200":
+          description: COIN-M Futures 交易规则和合约信息
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/RequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/COINMFuturesExchangeInfoResponse"
+        "404":
+          $ref: "#/components/responses/ProviderNotFound"
+        "501":
+          $ref: "#/components/responses/EndpointNotSupported"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
+  /api/v1/exchanges/{provider}/futures/coinm/depth:
+    get:
+      tags: [BinanceCoinM]
+      operationId: getCoinMFuturesDepth
+      summary: 获取 COIN-M Futures 订单簿
+      parameters:
+        - $ref: "#/components/parameters/Provider"
+        - $ref: "#/components/parameters/CoinMFuturesSymbol"
+        - name: limit
+          in: query
+          required: false
+          description: 返回的买卖盘档位数
+          schema:
+            type: integer
+            format: int32
+            enum: [5, 10, 20, 50, 100, 500, 1000]
+            default: 500
+      responses:
+        "200":
+          description: COIN-M Futures 订单簿深度
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/RequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/COINMFuturesDepthResponse"
+        "400":
+          $ref: "#/components/responses/InvalidParameter"
+        "404":
+          $ref: "#/components/responses/ProviderNotFound"
+        "501":
+          $ref: "#/components/responses/EndpointNotSupported"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
+  /api/v1/exchanges/{provider}/futures/coinm/klines:
+    get:
+      tags: [BinanceCoinM]
+      operationId: getCoinMFuturesKlines
+      summary: 获取 COIN-M Futures K 线
+      parameters:
+        - $ref: "#/components/parameters/Provider"
+        - $ref: "#/components/parameters/CoinMFuturesSymbol"
+        - name: interval
+          in: query
+          required: true
+          description: K 线间隔
+          schema:
+            type: string
+            enum: [1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w, 1M]
+            examples: [1m]
+        - name: startTime
+          in: query
+          required: false
+          description: 起始时间（毫秒）
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+        - name: endTime
+          in: query
+          required: false
+          description: 结束时间（毫秒）
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+        - name: limit
+          in: query
+          required: false
+          description: 返回的 K 线数量
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 1500
+            default: 500
+      responses:
+        "200":
+          description: COIN-M Futures K 线数据
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/RequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/COINMFuturesKlinesResponse"
+        "400":
+          $ref: "#/components/responses/InvalidParameter"
+        "404":
+          $ref: "#/components/responses/ProviderNotFound"
+        "501":
+          $ref: "#/components/responses/EndpointNotSupported"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
+  /api/v1/exchanges/{provider}/futures/coinm/ticker/24hr:
+    get:
+      tags: [BinanceCoinM]
+      operationId: getCoinMFuturesTicker24hr
+      summary: 获取 COIN-M Futures 24 小时行情
+      parameters:
+        - $ref: "#/components/parameters/Provider"
+        - $ref: "#/components/parameters/CoinMFuturesSymbol"
+      responses:
+        "200":
+          description: COIN-M Futures 24 小时价格变化统计
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/RequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/COINMFuturesTicker24hrResponse"
+        "400":
+          $ref: "#/components/responses/InvalidParameter"
+        "404":
+          $ref: "#/components/responses/ProviderNotFound"
+        "501":
+          $ref: "#/components/responses/EndpointNotSupported"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
+  /api/v1/exchanges/{provider}/futures/coinm/ticker/price:
+    get:
+      tags: [BinanceCoinM]
+      operationId: getCoinMFuturesTickerPrice
+      summary: 获取 COIN-M Futures 最新价格
+      parameters:
+        - $ref: "#/components/parameters/Provider"
+        - $ref: "#/components/parameters/CoinMFuturesSymbol"
+      responses:
+        "200":
+          description: COIN-M Futures 最新价格
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/RequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/COINMFuturesTickerPriceResponse"
+        "400":
+          $ref: "#/components/responses/InvalidParameter"
+        "404":
+          $ref: "#/components/responses/ProviderNotFound"
+        "501":
+          $ref: "#/components/responses/EndpointNotSupported"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
+  /api/v1/exchanges/{provider}/futures/coinm/ticker/book:
+    get:
+      tags: [BinanceCoinM]
+      operationId: getCoinMFuturesBookTicker
+      summary: 获取 COIN-M Futures 最优买卖价
+      parameters:
+        - $ref: "#/components/parameters/Provider"
+        - $ref: "#/components/parameters/CoinMFuturesSymbol"
+      responses:
+        "200":
+          description: COIN-M Futures 最优买价和卖价
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/RequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/COINMFuturesBookTickerResponse"
+        "400":
+          $ref: "#/components/responses/InvalidParameter"
+        "404":
+          $ref: "#/components/responses/ProviderNotFound"
+        "501":
+          $ref: "#/components/responses/EndpointNotSupported"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
+  /api/v1/exchanges/{provider}/futures/coinm/premium-index:
+    get:
+      tags: [BinanceCoinM]
+      operationId: getCoinMFuturesPremiumIndex
+      summary: 获取 COIN-M Futures 标记价格和资金费率
+      parameters:
+        - $ref: "#/components/parameters/Provider"
+        - $ref: "#/components/parameters/CoinMFuturesSymbol"
+      responses:
+        "200":
+          description: COIN-M Futures 标记价格、指数价格和资金费率
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/RequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/COINMFuturesPremiumIndexResponse"
+        "400":
+          $ref: "#/components/responses/InvalidParameter"
+        "404":
+          $ref: "#/components/responses/ProviderNotFound"
+        "501":
+          $ref: "#/components/responses/EndpointNotSupported"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
   /api/v1/summary:
     get:
       tags: [Summary]
@@ -712,6 +984,14 @@ components:
       schema:
         type: string
         examples: [BTCUSDT]
+    CoinMFuturesSymbol:
+      name: symbol
+      in: query
+      required: true
+      description: Binance COIN-M Futures 合约交易对
+      schema:
+        type: string
+        examples: [BTCUSD_PERP]
   headers:
     RequestID:
       description: 请求追踪标识
@@ -746,7 +1026,7 @@ components:
           schema:
             $ref: "#/components/schemas/ErrorEnvelope"
     EndpointNotSupported:
-      description: Provider 尚未实现该 Spot 能力
+      description: Provider 尚未实现该接口能力
       headers:
         X-Request-ID:
           $ref: "#/components/headers/RequestID"
@@ -1265,6 +1545,284 @@ components:
           items:
             type: object
             additionalProperties: true
+    COINMFuturesExchangeInfoResponse:
+      type: object
+      additionalProperties: false
+      required: [provider, info]
+      properties:
+        provider:
+          type: string
+          examples: [binance]
+        info:
+          $ref: "#/components/schemas/COINMFuturesExchangeInfo"
+    COINMFuturesExchangeInfo:
+      type: object
+      additionalProperties: false
+      required: [timezone, symbols]
+      properties:
+        timezone:
+          type: string
+          examples: [UTC]
+        server_time:
+          type: integer
+          format: int64
+        rate_limits:
+          type: array
+          items:
+            $ref: "#/components/schemas/RateLimit"
+        exchange_filters:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        symbols:
+          type: array
+          items:
+            $ref: "#/components/schemas/COINMFuturesSymbolInfo"
+    COINMFuturesSymbolInfo:
+      type: object
+      additionalProperties: false
+      required: [symbol, pair, contract_type, delivery_date, onboard_date, contract_status, base_asset, quote_asset, margin_asset, contract_size]
+      properties:
+        symbol:
+          type: string
+          examples: [BTCUSD_PERP]
+        pair:
+          type: string
+          examples: [BTCUSD]
+        contract_type:
+          type: string
+          examples: [PERPETUAL]
+        delivery_date:
+          type: integer
+          format: int64
+        onboard_date:
+          type: integer
+          format: int64
+        contract_status:
+          type: string
+          examples: [TRADING]
+        maint_margin_percent:
+          type: string
+        required_margin_percent:
+          type: string
+        base_asset:
+          type: string
+        quote_asset:
+          type: string
+        margin_asset:
+          type: string
+        price_precision:
+          type: integer
+        quantity_precision:
+          type: integer
+        base_asset_precision:
+          type: integer
+        quote_precision:
+          type: integer
+        underlying_type:
+          type: string
+        underlying_sub_type:
+          type: array
+          items:
+            type: string
+        equal_qty_precision:
+          type: integer
+        trigger_protect:
+          type: string
+        liquidation_fee:
+          type: string
+        market_take_bound:
+          type: string
+        max_move_order_limit:
+          type: integer
+        contract_size:
+          type: integer
+          format: int64
+        order_types:
+          type: array
+          items:
+            type: string
+        time_in_force:
+          type: array
+          items:
+            type: string
+        permission_sets:
+          type: array
+          items:
+            type: string
+        filters:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+    COINMFuturesDepthResponse:
+      type: object
+      additionalProperties: false
+      required: [provider, order_book]
+      properties:
+        provider:
+          type: string
+          examples: [binance]
+        order_book:
+          $ref: "#/components/schemas/FuturesOrderBook"
+    COINMFuturesKlinesResponse:
+      type: object
+      additionalProperties: false
+      required: [provider, klines]
+      properties:
+        provider:
+          type: string
+          examples: [binance]
+        klines:
+          type: array
+          items:
+            $ref: "#/components/schemas/Kline"
+    COINMFuturesTicker24hrResponse:
+      type: object
+      additionalProperties: false
+      required: [provider, ticker]
+      properties:
+        provider:
+          type: string
+          examples: [binance]
+        ticker:
+          $ref: "#/components/schemas/COINMFuturesTicker24hr"
+    COINMFuturesTicker24hr:
+      type: object
+      additionalProperties: false
+      required: [symbol, pair, price_change, price_change_percent, weighted_avg_price, last_price, volume, base_volume, open_time, close_time, count]
+      properties:
+        symbol:
+          type: string
+        pair:
+          type: string
+        price_change:
+          $ref: "#/components/schemas/DecimalString"
+        price_change_percent:
+          type: string
+        weighted_avg_price:
+          $ref: "#/components/schemas/DecimalString"
+        last_price:
+          $ref: "#/components/schemas/DecimalString"
+        last_qty:
+          $ref: "#/components/schemas/DecimalString"
+        open_price:
+          $ref: "#/components/schemas/DecimalString"
+        high_price:
+          $ref: "#/components/schemas/DecimalString"
+        low_price:
+          $ref: "#/components/schemas/DecimalString"
+        volume:
+          $ref: "#/components/schemas/DecimalString"
+        base_volume:
+          $ref: "#/components/schemas/DecimalString"
+        open_time:
+          type: integer
+          format: int64
+        close_time:
+          type: integer
+          format: int64
+        first_id:
+          type: integer
+          format: int64
+        last_id:
+          type: integer
+          format: int64
+        count:
+          type: integer
+    COINMFuturesTickerPriceResponse:
+      type: object
+      additionalProperties: false
+      required: [provider, ticker]
+      properties:
+        provider:
+          type: string
+          examples: [binance]
+        ticker:
+          $ref: "#/components/schemas/COINMFuturesPriceTicker"
+    COINMFuturesPriceTicker:
+      type: object
+      additionalProperties: false
+      required: [symbol, pair, price, time]
+      properties:
+        symbol:
+          type: string
+        pair:
+          type: string
+        price:
+          $ref: "#/components/schemas/DecimalString"
+        time:
+          type: integer
+          format: int64
+    COINMFuturesBookTickerResponse:
+      type: object
+      additionalProperties: false
+      required: [provider, ticker]
+      properties:
+        provider:
+          type: string
+          examples: [binance]
+        ticker:
+          $ref: "#/components/schemas/COINMFuturesBookTicker"
+    COINMFuturesBookTicker:
+      type: object
+      additionalProperties: false
+      required: [last_update_id, symbol, pair, bid_price, bid_qty, ask_price, ask_qty, time]
+      properties:
+        last_update_id:
+          type: integer
+          format: int64
+        symbol:
+          type: string
+        pair:
+          type: string
+        bid_price:
+          $ref: "#/components/schemas/DecimalString"
+        bid_qty:
+          $ref: "#/components/schemas/DecimalString"
+        ask_price:
+          $ref: "#/components/schemas/DecimalString"
+        ask_qty:
+          $ref: "#/components/schemas/DecimalString"
+        time:
+          type: integer
+          format: int64
+    COINMFuturesPremiumIndexResponse:
+      type: object
+      additionalProperties: false
+      required: [provider, premium_index]
+      properties:
+        provider:
+          type: string
+          examples: [binance]
+        premium_index:
+          $ref: "#/components/schemas/COINMFuturesPremiumIndex"
+    COINMFuturesPremiumIndex:
+      type: object
+      additionalProperties: false
+      required: [symbol, pair, mark_price, index_price, time]
+      properties:
+        symbol:
+          type: string
+        pair:
+          type: string
+        mark_price:
+          $ref: "#/components/schemas/DecimalString"
+        index_price:
+          $ref: "#/components/schemas/DecimalString"
+        estimated_settle_price:
+          $ref: "#/components/schemas/DecimalString"
+        last_funding_rate:
+          type: string
+        interest_rate:
+          type: string
+        next_funding_time:
+          type: integer
+          format: int64
+        time:
+          type: integer
+          format: int64
     FuturesDepth:
       type: object
       additionalProperties: false

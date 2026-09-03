@@ -32,6 +32,7 @@ redis:
 binance:
   base_url: "https://api.binance.com"
   futures_base_url: "https://fapi.binance.com"
+  coin_m_futures_base_url: "https://dapi.binance.com"
   api_key: ""
   secret_key: ""
   recv_window: 5000
