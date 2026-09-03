@@ -688,6 +688,29 @@ paths:
           $ref: "#/components/responses/EndpointNotSupported"
         "502":
           $ref: "#/components/responses/UpstreamError"
+  /api/v1/exchanges/{provider}/futures/usdm/balances:
+    get:
+      tags: [WeexContract]
+      operationId: getWeexContractBalances
+      summary: 获取 Weex Contract 账户余额
+      parameters:
+        - $ref: "#/components/parameters/WeexProvider"
+      responses:
+        "200":
+          description: Weex Contract 账户余额
+          headers:
+            X-Request-ID:
+              $ref: "#/components/headers/RequestID"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContractBalances"
+        "404":
+          $ref: "#/components/responses/ProviderNotFound"
+        "501":
+          $ref: "#/components/responses/EndpointNotSupported"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
   /api/v1/exchanges/{provider}/futures/coinm/ping:
     get:
       tags: [BinanceCoinM]
@@ -2207,6 +2230,18 @@ components:
           $ref: "#/components/schemas/DecimalString"
         liquidate_price:
           $ref: "#/components/schemas/DecimalString"
+    ContractBalances:
+      type: object
+      additionalProperties: false
+      required: [provider, balances]
+      properties:
+        provider:
+          type: string
+          examples: [weex]
+        balances:
+          type: array
+          items:
+            $ref: "#/components/schemas/AssetBalance"
     ExchangeBalances:
       type: object
       additionalProperties: false

@@ -12,12 +12,13 @@ import (
 )
 
 type Exchange struct {
-	providers             map[string]exchange.Provider
-	spotProviders         map[string]exchange.SpotProvider
-	futuresProviders      map[string]exchange.USDSMFuturesProvider
-	positionProviders     map[string]exchange.ContractPositionProvider
-	coinMFuturesProviders map[string]exchange.COINMFuturesProvider
-	log                   *zap.Logger
+	providers                map[string]exchange.Provider
+	spotProviders            map[string]exchange.SpotProvider
+	futuresProviders         map[string]exchange.USDSMFuturesProvider
+	positionProviders        map[string]exchange.ContractPositionProvider
+	contractBalanceProviders map[string]exchange.ContractBalanceProvider
+	coinMFuturesProviders    map[string]exchange.COINMFuturesProvider
+	log                      *zap.Logger
 }
 
 func NewExchange(providers []exchange.Provider, log *zap.Logger) *Exchange {
@@ -25,6 +26,7 @@ func NewExchange(providers []exchange.Provider, log *zap.Logger) *Exchange {
 	spotProviders := make(map[string]exchange.SpotProvider, len(providers))
 	futuresProviders := make(map[string]exchange.USDSMFuturesProvider, len(providers))
 	positionProviders := make(map[string]exchange.ContractPositionProvider, len(providers))
+	contractBalanceProviders := make(map[string]exchange.ContractBalanceProvider, len(providers))
 	coinMFuturesProviders := make(map[string]exchange.COINMFuturesProvider, len(providers))
 	for _, provider := range providers {
 		registered[provider.Name()] = provider
@@ -37,17 +39,21 @@ func NewExchange(providers []exchange.Provider, log *zap.Logger) *Exchange {
 		if positionProvider, ok := provider.(exchange.ContractPositionProvider); ok {
 			positionProviders[provider.Name()] = positionProvider
 		}
+		if contractBalanceProvider, ok := provider.(exchange.ContractBalanceProvider); ok {
+			contractBalanceProviders[provider.Name()] = contractBalanceProvider
+		}
 		if coinMFuturesProvider, ok := provider.(exchange.COINMFuturesProvider); ok {
 			coinMFuturesProviders[provider.Name()] = coinMFuturesProvider
 		}
 	}
 	return &Exchange{
-		providers:             registered,
-		spotProviders:         spotProviders,
-		futuresProviders:      futuresProviders,
-		positionProviders:     positionProviders,
-		coinMFuturesProviders: coinMFuturesProviders,
-		log:                   log,
+		providers:                registered,
+		spotProviders:            spotProviders,
+		futuresProviders:         futuresProviders,
+		positionProviders:        positionProviders,
+		contractBalanceProviders: contractBalanceProviders,
+		coinMFuturesProviders:    coinMFuturesProviders,
+		log:                      log,
 	}
 }
 
@@ -358,6 +364,19 @@ func (h *Exchange) ContractPositions(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"provider": name, "positions": positions})
 }
 
+func (h *Exchange) ContractBalances(c *gin.Context) {
+	name, provider, ok := h.contractBalanceProvider(c)
+	if !ok {
+		return
+	}
+	balances, err := provider.ContractBalances(c.Request.Context())
+	if err != nil {
+		h.handleSpotError(c, name, "get contract account balances failed", err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"provider": name, "balances": balances})
+}
+
 func (h *Exchange) CoinMFuturesPing(c *gin.Context) {
 	name, provider, ok := h.coinMFuturesProvider(c)
 	if !ok {
@@ -545,6 +564,24 @@ func (h *Exchange) contractPositionProvider(c *gin.Context) (string, exchange.Co
 	if _, registered := h.providers[name]; registered {
 		c.JSON(http.StatusNotImplemented, gin.H{
 			"error": gin.H{"code": "endpoint_not_supported", "message": "contract position endpoint is not supported by this provider"},
+		})
+		return "", nil, false
+	}
+	c.JSON(http.StatusNotFound, gin.H{
+		"error": gin.H{"code": "provider_not_found", "message": "exchange provider not found"},
+	})
+	return "", nil, false
+}
+
+func (h *Exchange) contractBalanceProvider(c *gin.Context) (string, exchange.ContractBalanceProvider, bool) {
+	name := c.Param("provider")
+	provider, ok := h.contractBalanceProviders[name]
+	if ok {
+		return name, provider, true
+	}
+	if _, registered := h.providers[name]; registered {
+		c.JSON(http.StatusNotImplemented, gin.H{
+			"error": gin.H{"code": "endpoint_not_supported", "message": "contract balance endpoint is not supported by this provider"},
 		})
 		return "", nil, false
 	}

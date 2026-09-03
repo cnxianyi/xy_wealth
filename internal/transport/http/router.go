@@ -62,6 +62,7 @@ func NewRouter(
 	futures.GET("/ticker/book", exchangeHandler.FuturesBookTicker)
 	futures.GET("/premium-index", exchangeHandler.FuturesPremiumIndex)
 	futures.GET("/positions", exchangeHandler.ContractPositions)
+	futures.GET("/balances", exchangeHandler.ContractBalances)
 	coinMFutures := v1.Group("/exchanges/:provider/futures/coinm")
 	coinMFutures.GET("/ping", exchangeHandler.CoinMFuturesPing)
 	coinMFutures.GET("/time", exchangeHandler.CoinMFuturesServerTime)

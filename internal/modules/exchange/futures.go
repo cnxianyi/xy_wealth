@@ -1,6 +1,10 @@
 package exchange
 
-import "context"
+import (
+	"context"
+
+	"github.com/cnxianyi/xy_wealth/internal/domain/asset"
+)
 
 // USDSMFuturesProvider is the public, read-only USDⓈ-M Futures / compatible
 // Contract REST surface.
@@ -26,6 +30,14 @@ type USDSMFuturesProvider interface {
 type ContractPositionProvider interface {
 	Provider
 	ContractPositions(ctx context.Context, symbol string) ([]ContractPosition, error)
+}
+
+// ContractBalanceProvider exposes read-only Contract account balances for
+// providers that implement a signed balance endpoint. It is separate from
+// Provider.Balances, which represents the provider's default (Spot) account.
+type ContractBalanceProvider interface {
+	Provider
+	ContractBalances(ctx context.Context) ([]asset.Balance, error)
 }
 
 // COINMFuturesProvider is the public, read-only COIN-M Futures REST surface.
