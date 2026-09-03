@@ -1401,6 +1401,8 @@ paths:
       operationId: getFullSummary
       summary: 获取全部资产来源的聚合结果
       description: Provider 之间并发查询，并按 Spot、USDⓈ-M、USDC-M、COIN-M 或 Contract 产品独立返回账户数据；单个来源或产品失败不会导致整个请求失败。
+      parameters:
+        - $ref: "#/components/parameters/SummaryIncludeZero"
       responses:
         "200":
           description: 完整聚合快照
@@ -1411,11 +1413,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FullSummary"
+        "400":
+          $ref: "#/components/responses/InvalidParameter"
   /api/v1/summary/exchanges:
     get:
       tags: [Summary]
       operationId: getExchangeSummary
       summary: 获取所有交易所及产品的聚合结果
+      parameters:
+        - $ref: "#/components/parameters/SummaryIncludeZero"
       responses:
         "200":
           description: 交易所聚合快照
@@ -1426,11 +1432,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ExchangeSummary"
+        "400":
+          $ref: "#/components/responses/InvalidParameter"
   /api/v1/summary/banks:
     get:
       tags: [Summary]
       operationId: getBankSummary
       summary: 获取所有银行的聚合结果
+      parameters:
+        - $ref: "#/components/parameters/SummaryIncludeZero"
       responses:
         "200":
           description: 银行聚合快照
@@ -1441,6 +1451,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/BankSummary"
+        "400":
+          $ref: "#/components/responses/InvalidParameter"
 components:
   parameters:
     Provider:
@@ -1507,6 +1519,14 @@ components:
       schema:
         type: string
         examples: [BTCPERP]
+    SummaryIncludeZero:
+      name: include_zero
+      in: query
+      required: false
+      description: 是否保留余额或持仓数量为 0 的项目；传 false 时隐藏零值，未传时保持 provider 原始返回
+      schema:
+        type: boolean
+        examples: [false]
   headers:
     RequestID:
       description: 请求追踪标识

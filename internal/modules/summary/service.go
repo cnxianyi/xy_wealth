@@ -10,11 +10,19 @@ import (
 	"github.com/cnxianyi/xy_wealth/internal/domain/asset"
 	"github.com/cnxianyi/xy_wealth/internal/modules/bank"
 	"github.com/cnxianyi/xy_wealth/internal/modules/exchange"
+	"github.com/shopspring/decimal"
 )
 
 type Service struct {
 	exchanges []exchange.Provider
 	banks     []bank.Provider
+}
+
+// Options controls summary response filtering. A nil IncludeZero preserves
+// the provider's original response; false removes zero-valued balances and
+// positions, while true keeps them.
+type Options struct {
+	IncludeZero *bool
 }
 
 type Snapshot struct {
@@ -56,6 +64,10 @@ func New(exchanges []exchange.Provider, banks []bank.Provider) *Service {
 }
 
 func (s *Service) Get(ctx context.Context) Snapshot {
+	return s.GetWithOptions(ctx, Options{})
+}
+
+func (s *Service) GetWithOptions(ctx context.Context, options Options) Snapshot {
 	result := Snapshot{
 		GeneratedAt: time.Now().UTC(),
 		Exchanges:   make([]ExchangeData, len(s.exchanges)),
@@ -83,7 +95,90 @@ func (s *Service) Get(ctx context.Context) Snapshot {
 		}(i, provider)
 	}
 	wg.Wait()
+	if options.IncludeZero != nil && !*options.IncludeZero {
+		filterZeroValues(&result)
+	}
 	return result
+}
+
+func filterZeroValues(snapshot *Snapshot) {
+	for exchangeIndex := range snapshot.Exchanges {
+		item := &snapshot.Exchanges[exchangeIndex]
+		item.Balances = filterSpotBalances(item.Balances)
+		for productIndex := range item.Products {
+			product := &item.Products[productIndex]
+			product.FuturesBalances = filterFuturesBalances(product.FuturesBalances)
+			product.FuturesPositions = filterFuturesPositions(product.FuturesPositions)
+			product.ContractBalances = filterSpotBalances(product.ContractBalances)
+			product.ContractPositions = filterContractPositions(product.ContractPositions)
+		}
+	}
+	for bankIndex := range snapshot.Banks {
+		snapshot.Banks[bankIndex].Accounts = filterBankAccounts(snapshot.Banks[bankIndex].Accounts)
+	}
+}
+
+func filterSpotBalances(values []asset.Balance) []asset.Balance {
+	filtered := make([]asset.Balance, 0, len(values))
+	for _, value := range values {
+		if !allZero(value.Free, value.Locked, value.Total) {
+			filtered = append(filtered, value)
+		}
+	}
+	return filtered
+}
+
+func filterFuturesBalances(values []exchange.FuturesAccountBalance) []exchange.FuturesAccountBalance {
+	filtered := make([]exchange.FuturesAccountBalance, 0, len(values))
+	for _, value := range values {
+		if !allZero(value.Balance, value.WithdrawAvailable, value.CrossWalletBalance, value.CrossUnrealizedProfit, value.AvailableBalance, value.MaxWithdrawAmount) {
+			filtered = append(filtered, value)
+		}
+	}
+	return filtered
+}
+
+func filterFuturesPositions(values []exchange.FuturesPosition) []exchange.FuturesPosition {
+	filtered := make([]exchange.FuturesPosition, 0, len(values))
+	for _, value := range values {
+		if !allZero(value.PositionAmount) {
+			filtered = append(filtered, value)
+		}
+	}
+	return filtered
+}
+
+func filterContractPositions(values []exchange.ContractPosition) []exchange.ContractPosition {
+	filtered := make([]exchange.ContractPosition, 0, len(values))
+	for _, value := range values {
+		if !allZero(value.Size) {
+			filtered = append(filtered, value)
+		}
+	}
+	return filtered
+}
+
+func filterBankAccounts(values []bank.Account) []bank.Account {
+	filtered := make([]bank.Account, 0, len(values))
+	for _, value := range values {
+		if !allZero(value.Balance) {
+			filtered = append(filtered, value)
+		}
+	}
+	return filtered
+}
+
+func allZero(values ...string) bool {
+	for _, value := range values {
+		if strings.TrimSpace(value) == "" {
+			continue
+		}
+		amount, err := decimal.NewFromString(value)
+		if err != nil || !amount.IsZero() {
+			return false
+		}
+	}
+	return true
 }
 
 func (s *Service) collectExchange(ctx context.Context, provider exchange.Provider) ExchangeData {

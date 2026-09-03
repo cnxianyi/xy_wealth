@@ -69,6 +69,45 @@ func TestServiceGetReportsProductFailuresIndependently(t *testing.T) {
 	t.Fatal("summary did not include USDC-M product")
 }
 
+func TestServiceGetWithOptionsFiltersZeroValues(t *testing.T) {
+	includeZero := false
+	result := New(
+		[]exchange.Provider{stubExchange{name: "filter", balances: []asset.Balance{{Symbol: "ZERO", Total: "0"}, {Symbol: "BTC", Total: "1"}}}},
+		[]bank.Provider{stubBank{name: "bank", accounts: []bank.Account{{Currency: "CNY", Balance: "0"}, {Currency: "USD", Balance: "4"}}}},
+	).GetWithOptions(context.Background(), Options{IncludeZero: &includeZero})
+	if len(result.Exchanges[0].Balances) != 1 || result.Exchanges[0].Balances[0].Symbol != "BTC" || len(result.Banks[0].Accounts) != 1 || result.Banks[0].Accounts[0].Currency != "USD" {
+		t.Fatalf("GetWithOptions zero filtering = %#v", result)
+	}
+
+	snapshot := Snapshot{
+		Exchanges: []ExchangeData{{
+			Balances: []asset.Balance{
+				{Symbol: "ZERO", Free: "0", Locked: "0", Total: "0"},
+				{Symbol: "BTC", Free: "1", Locked: "0", Total: "1"},
+			},
+			Products: []ProductData{{
+				FuturesBalances:   []exchange.FuturesAccountBalance{{Asset: "ZERO", Balance: "0"}, {Asset: "USDT", Balance: "2"}},
+				FuturesPositions:  []exchange.FuturesPosition{{Symbol: "ZERO", PositionAmount: "0"}, {Symbol: "BTCUSDT", PositionAmount: "1"}},
+				ContractBalances:  []asset.Balance{{Symbol: "ZERO", Total: "0"}, {Symbol: "USDT", Total: "3"}},
+				ContractPositions: []exchange.ContractPosition{{Symbol: "ZERO", Size: "0"}, {Symbol: "BTCUSDT", Size: "1"}},
+			}},
+		}},
+		Banks: []BankData{{Accounts: []bank.Account{{Currency: "CNY", Balance: "0"}, {Currency: "USD", Balance: "4"}}}},
+	}
+	filterZeroValues(&snapshot)
+
+	if len(snapshot.Exchanges[0].Balances) != 1 || snapshot.Exchanges[0].Balances[0].Symbol != "BTC" {
+		t.Fatalf("spot zero filtering = %#v", snapshot.Exchanges[0].Balances)
+	}
+	product := snapshot.Exchanges[0].Products[0]
+	if len(product.FuturesBalances) != 1 || len(product.FuturesPositions) != 1 || len(product.ContractBalances) != 1 || len(product.ContractPositions) != 1 {
+		t.Fatalf("product zero filtering = %#v", product)
+	}
+	if len(snapshot.Banks[0].Accounts) != 1 || snapshot.Banks[0].Accounts[0].Currency != "USD" {
+		t.Fatalf("bank zero filtering = %#v", snapshot.Banks[0].Accounts)
+	}
+}
+
 type stubExchange struct {
 	name     string
 	balances []asset.Balance
